@@ -1,0 +1,39 @@
+{
+  "id": "./",
+  "name": "Into the Deep: The Search for ROOT’s Cousin",
+  "short_name": "Into the Deep",
+  "description": "Join Stickolas Cage and Donald Stump on an endless cave adventure to find ROOT’s long-lost cousin.",
+  "start_url": "./?source=pwa",
+  "scope": "./",
+  "display": "fullscreen",
+  "display_override": [
+    "fullscreen",
+    "standalone"
+  ],
+  "background_color": "#101b1a",
+  "theme_color": "#101b1a",
+  "categories": [
+    "games",
+    "entertainment"
+  ],
+  "icons": [
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

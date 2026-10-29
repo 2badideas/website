@@ -24,6 +24,7 @@
         </a>
         <ul class="nav-links" role="list">
           <li><a href="#game">Stick Together</a></li>
+          <li><a href="#play">Trial games</a></li>
         </ul>
         <a href="https://store.steampowered.com/app/4838520/Stick_Together/" class="nav-steam" target="_blank" rel="noopener noreferrer"><svg class="wishlist-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>Wishlist on Steam</a>
         <button class="nav-mobile-toggle" id="mobile-toggle" aria-label="Open mobile menu" aria-expanded="false">
@@ -35,6 +36,7 @@
     </div>
     <div class="mobile-menu" id="mobile-menu" role="navigation" aria-label="Mobile navigation">
       <a href="#game" onclick="closeMobile()">Stick Together</a>
+      <a href="#play" onclick="closeMobile()">Trial games</a>
       <a href="https://store.steampowered.com/app/4838520/Stick_Together/" target="_blank" rel="noopener noreferrer"><svg class="wishlist-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>Wishlist on Steam</a>
       <a href="https://discord.gg/8fMnmaJzGU" target="_blank" rel="noopener noreferrer">Join the Discord</a>
     </div>
@@ -112,23 +114,21 @@
     <!-- ============================================================
          PLAY SECTION
     ============================================================ -->
-    <section class="section" id="play" aria-labelledby="play-heading">
+    <section class="section trial-games" id="play" aria-labelledby="play-heading">
       <div class="container">
-        <div class="browser-game fade-in">
-          <div>
-            <p class="label section-label">Can't wait until launch?</p>
-            <h2 class="section-heading" id="play-heading">Sticks in the Woods</h2>
-            <p class="section-sub">Small stick. Big trouble.</p>
-            <p class="section-body">
-              Help Stickolas and Donald defend themselves
-              in a forest full of nasties. Grab a plant weapon, stand your
-              ground, and see how long you can survive.
-            </p>
-          </div>
-          <div class="browser-game-actions">
-            <a href="games/sticks-in-the-woods/" class="btn btn-primary">Play now <span aria-hidden="true">&rarr;</span></a>
-            <p>Free to play in your browser.<br>Keyboard &amp; mouse or touch controls.</p>
-          </div>
+        <h2 class="trial-games-heading" id="play-heading">Trial games</h2>
+        <p class="trial-games-note">Small adventures from the world of Stick Together. Free in your browser, with keyboard or touch controls.</p>
+        <div class="trial-games-grid">
+          <article class="browser-game fade-in" aria-labelledby="sticks-in-the-woods-heading">
+            <h3 id="sticks-in-the-woods-heading">Sticks in the Woods</h3>
+            <p>Help Stickolas and Donald survive a forest full of nasties.</p>
+            <a href="games/sticks-in-the-woods/" class="btn btn-primary" aria-label="Play Sticks in the Woods">Play <span aria-hidden="true">&rarr;</span></a>
+          </article>
+          <article class="browser-game fade-in" aria-labelledby="into-the-deep-heading">
+            <h3 id="into-the-deep-heading">Into the Deep</h3>
+            <p>Follow Donald’s torch into the caves to find ROOT’s cousin.</p>
+            <a href="games/into-the-deep/dist/" class="btn btn-primary" aria-label="Play Into the Deep">Play <span aria-hidden="true">&rarr;</span></a>
+          </article>
         </div>
       </div>
     </section>
@@ -151,6 +151,7 @@
         <!-- Nav -->
         <nav class="footer-nav" aria-label="Footer navigation">
           <a href="#game">Stick Together</a>
+          <a href="#play">Trial games</a>
           <a href="privacy.html">Privacy Policy</a>
           <a href="https://store.steampowered.com/app/4838520/Stick_Together/" target="_blank" rel="noopener noreferrer"><svg class="wishlist-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>Wishlist on Steam</a>
         </nav>

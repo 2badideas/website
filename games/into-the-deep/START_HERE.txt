@@ -1,0 +1,48 @@
+INTO THE DEEP
+The Search for ROOT's Cousin
+
+GAME + SOURCE
+
+1. Use the website repository, including its shared assets/fonts directory.
+2. Open a terminal in the website repository root.
+3. Start a local server (requires Python 3):
+
+   macOS / Linux:
+   python3 -m http.server 8000
+
+   Windows:
+   py -m http.server 8000
+
+4. Open http://localhost:8000/games/into-the-deep/dist/ in your browser.
+
+Stop the server with Ctrl+C. Do not launch by double-clicking index.html:
+the game uses JavaScript modules and needs an HTTP server.
+No npm install or build step is needed. Three.js is included.
+
+HOSTING
+Deploy the website with games/into-the-deep/dist/ and assets/fonts/ intact.
+The game shares the locally hosted Satoshi and Inter fonts from the site.
+Serve over HTTPS for PWA installation and offline support. Keep the game
+JavaScript, manifest, service worker and assets beside its index.html.
+An existing Python, Node, or other static web server works for local play.
+
+CONTROLS
+WASD / arrows: move and climb
+Space: jump
+J: attack
+E: descend at the cave entrance
+1-4: select available weapons
+Escape / P: pause
+Touch controls appear on mobile.
+
+SAVES
+Progress is stored in the browser for the URL where you play. Moving from
+the hosted prototype to localhost or your own domain starts a separate
+save. This download contains the game, not a copy of your browser save.
+
+FILES
+- dist/: playable game; also requires the website shared assets/fonts/
+- README.md: implementation, balance and verification details
+- tests/: optional Node.js regression tests
+- THIRD_PARTY/three-LICENSE.txt: Three.js MIT license
+- VERSION.txt: source version of this download

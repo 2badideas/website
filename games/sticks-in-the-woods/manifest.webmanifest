@@ -1,0 +1,18 @@
+{
+  "id": "./",
+  "name": "Sticks in the Woods",
+  "short_name": "Sticks in the Woods",
+  "description": "Help Stickolas and Donald survive the woods with weapons grown from the wild.",
+  "start_url": "./?source=pwa",
+  "scope": "./",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "background_color": "#101d18",
+  "theme_color": "#101d18",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    {"src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}

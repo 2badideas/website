@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
 <title>Sticks in the Woods — Nightfall</title>
 <style>
   :root { --cream:#f4e7ca;--muted:#a9bba5;--green:#b9ec8f;--gold:#f6c67c;--ink:#0c1916; }
@@ -100,7 +100,20 @@
   #muteBtn{position:fixed;z-index:6;bottom:14px;right:15px;color:#d7dfc8;background:#19332db8;border:1px solid #78916d;padding:7px 10px;border-radius:8px;font-size:13px;cursor:pointer}
   @media(pointer:coarse){#mobile.active{display:block}.controls{display:none}.abilitybar{display:none}#weaponHud{padding:6px 9px;min-width:122px;max-width:190px}#weaponHud strong{font-size:12px}#weaponHud small{font-size:9px}#pickupPrompt{bottom:165px;font-size:11px}#muteBtn{right:13px;top:12px;bottom:auto}.stats{margin-right:45px}.stat{padding:8px 10px;min-width:67px}.stat b{font-size:19px}#hud{padding:14px 14px 11px}}
   @media(max-width:640px){.mobileButtons{gap:5px;right:9px}#attackBtn{width:76px;height:76px;font-size:12px}#dashBtn,#burstBtn,#pickupBtn{width:53px;height:53px;font-size:10px}.cards{gap:7px}.card{min-height:190px;padding:14px 10px}.card .symbol{font-size:27px}.card strong{font-size:13px}.card p{font-size:11px}.card .choose{font-size:9px}.main-title{font-size:clamp(48px,12vw,70px)}.brand{font-size:10px;letter-spacing:1px}.healthbox{width:155px}.stat{min-width:60px}.stat:last-child{display:none}.panel{max-height:95vh;overflow:auto}}
+  html,body{height:100dvh}
+  #hud{padding-top:max(22px,env(safe-area-inset-top));padding-bottom:max(20px,env(safe-area-inset-bottom));padding-left:max(25px,env(safe-area-inset-left));padding-right:max(25px,env(safe-area-inset-right))}
+  .screen{padding-top:max(22px,env(safe-area-inset-top));padding-bottom:max(22px,env(safe-area-inset-bottom))}
 </style>
+  <meta name="theme-color" content="#101d18" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Sticks in the Woods" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="assets/icon-180.png" />
+  <link rel="icon" type="image/png" href="assets/icon-192.png" />
+  <link rel="stylesheet" href="pwa.css" />
+  <script src="pwa.js" defer></script>
 </head>
 <body>
 <canvas id="game" aria-label="Sticks in the Woods game"></canvas>
@@ -122,10 +135,11 @@
   <div class="menu-features"><span>⚔ SURVIVE THE WAVES</span><span>❖ DISCOVER WILD WEAPONS</span><span>✦ GROW STRONGER</span></div>
   <button id="startBtn" class="button play-button">BEGIN SURVIVAL <span aria-hidden="true">➜</span></button>
   <div class="menu-controls"><strong>HOW TO PLAY</strong><div>WASD <span>MOVE</span> · MOUSE <span>AIM</span> · CLICK <span>ATTACK</span></div><div>E <span>PICK UP</span> · SPACE <span>DASH</span> · Q <span>ROOT BURST</span></div></div>
+  <div><button class="woods-install-button" data-install>Install game</button></div>
   <div class="menu-footer">2BAD IDEAS <span>✦</span> MADE IN THE WOODS</div>
 </div></div>
 <div id="upgradeScreen" class="screen hidden"><div class="panel"><div class="tag">✦ THE FOREST GROWS QUIET ✦</div><h2 class="upgrade-title">One more wave survived.</h2><p class="upgrade-sub" id="upgradeSub">Choose how your stick grows stronger for the next wave.</p><div class="cards" id="upgradeCards"></div><div class="smallprint">A new plant weapon is waiting nearby! Select your upgrade, then walk over and press E to equip it. Carry one weapon plus a torch in your free hand. Each cycle has three daylight waves, then two night waves.</div></div></div>
-<div id="pauseScreen" class="screen hidden"><div class="panel"><div class="eyebrow">A MOMENT OF PEACE</div><h2 class="upgrade-title">Paused</h2><p class="subtitle">The creatures can wait. For now.</p><button class="button" id="resumeBtn">RESUME</button></div></div>
+<div id="pauseScreen" class="screen hidden"><div class="panel"><div class="eyebrow">A MOMENT OF PEACE</div><h2 class="upgrade-title">Paused</h2><p class="subtitle">The creatures can wait. For now.</p><button class="button" id="resumeBtn">RESUME</button><div><button class="woods-install-button" data-install>Install game</button></div></div></div>
 <div id="endScreen" class="screen hidden"><div class="panel"><div class="tag">✦ THE FOREST CLAIMS ANOTHER ✦</div><h2 class="upgrade-title">A brave little stick.</h2><p class="upgrade-sub">The woods were stronger this time. The next run is yours.</p><div class="result"><div><strong id="finalWave">1</strong><small>WAVE REACHED</small></div><div><strong id="finalKills">0</strong><small>CREATURES BEATEN</small></div><div><strong id="finalScore">0</strong><small>FINAL SCORE</small></div></div><button class="button" id="restartBtn">TRY AGAIN &nbsp; ↻</button></div></div>
 <script>
 (() => {

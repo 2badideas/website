@@ -1,0 +1,46 @@
+.woods-install-button {
+  display: inline-block;
+  margin: 16px 8px 0;
+  padding: 9px 15px;
+  min-height: 44px;
+  border: 1px solid #799b6a88;
+  border-radius: 8px;
+  background: #142b22cc;
+  color: #c5dfb0;
+  font: 600 12px Trebuchet MS, Arial, sans-serif;
+  cursor: pointer;
+}
+.woods-install-button[hidden] { display: none; }
+.woods-install-dialog {
+  width: min(440px, calc(100% - 32px));
+  max-height: 85dvh;
+  overflow: auto;
+  padding: 28px;
+  border: 1px solid #799b6a;
+  border-radius: 14px;
+  background: #10271e;
+  color: #f4e7ca;
+  font: 14px/1.65 Trebuchet MS, Arial, sans-serif;
+  touch-action: auto;
+}
+.woods-install-dialog::backdrop { background: #04110bcc; backdrop-filter: blur(5px); }
+.woods-install-dialog h2 { margin: 8px 0 16px; font: bold 27px Georgia, serif; }
+.woods-install-dialog p { margin: 12px 0; }
+.woods-install-dialog .woods-install-note { font-size: 12px; color: #b3c6a7; }
+.woods-install-close {
+  float: right;
+  min-width: 44px;
+  min-height: 44px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #d9e7c8;
+  font-size: 22px;
+  cursor: pointer;
+}
+.woods-install-dialog button:focus-visible,
+.woods-install-button:focus-visible { outline: 2px solid #b9ec8f; outline-offset: 3px; }
+.woods-install-dialog button[hidden] { display: none; }
+@media (max-height: 600px) {
+  .woods-install-button { margin-top: 8px; }
+}
