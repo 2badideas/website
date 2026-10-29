@@ -608,16 +608,34 @@ a { color: inherit; text-decoration: none; }
 
 /* Browser game */
 .browser-game {
+  --color-text: #f7edce;
+  --color-text-muted: #d3d9c2;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-10);
   padding: clamp(var(--space-6), 5vw, var(--space-12));
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  /* Match the game's title-screen gradient over its page background. */
+  background: radial-gradient(ellipse at 50% 38%, #102a20dd 0%, #07150ef3 66%, #030d0afb 100%), #101d18;
+  border: 1px solid #8fc27966;
   border-radius: var(--radius-lg);
 }
+.browser-game .section-label { color: #b7e991; }
+.browser-game .section-heading {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
 .browser-game .section-body { max-width: 55ch; }
+.browser-game .btn-primary {
+  background: linear-gradient(180deg, #d6f5a4, #8ebf71);
+  color: #18321d;
+  border: 1px solid #e1eda1;
+  box-shadow: 0 5px 0 #476c3e, 0 14px 40px #0006;
+}
+.browser-game .btn-primary:hover { filter: brightness(1.1); }
+.browser-game .btn-primary:active { box-shadow: 0 2px 0 #476c3e; }
+.browser-game .btn-primary:focus-visible { outline-color: #b7e991; }
 .browser-game-actions { flex-shrink: 0; max-width: 100%; }
 .browser-game-actions p {
   margin-top: var(--space-4);
