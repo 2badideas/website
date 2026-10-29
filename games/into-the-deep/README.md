@@ -4,7 +4,7 @@ A browser-local Three.js side-scrolling cave adventure starring Stickolas Cage, 
 
 ## Play and fixed roles
 
-Serve the website repository root over HTTP, then open `/games/into-the-deep/dist/`. The game reuses the website’s local Satoshi and Inter fonts from `/assets/fonts/`; include those shared assets if deploying the game separately. WASD/arrows move and climb, Space jumps, J attacks, E descends at the cave entrance, 1–4 select available weapons, and P/Escape pauses. On mobile, the D-pad and Jump/Attack/Enter controls support multiple fingers; Weapon cycles available gear.
+Serve the website repository root over HTTP, then open `/games/into-the-deep/dist/`. The game reuses the website’s local Satoshi and Inter fonts from `/assets/fonts/`; include those shared assets if deploying the game separately. WASD/arrows move and climb, Space jumps, J attacks, E descends at the cave entrance, 1–4 select available weapons, and P/Escape pauses. On mobile, the thumb joystick and Jump/Attack/Enter controls support multiple fingers; Weapon cycles available gear.
 
 Stickolas always leads and defends. Donald follows, holding an ever-burning torch. There is no explorer switching. Donald is protected while Stickolas takes combat damage; if Stickolas falls, the expedition ends. At exits, Stickolas recovers fully before entering the next level.
 
@@ -58,8 +58,18 @@ The title screen uses a centered dark-green layout inspired by the sibling game 
 
 ## Floating HUD
 
-The cave fills the viewport behind a translucent HUD, matching the presentation of Sticks in the Woods. Depth, score and treasure float in compact panels with pause and utility controls; health, torch and weapon panels remain over the cave. Phone portrait and landscape layouts retain touch controls and safe-area spacing. Title and pause overlays cover the HUD controls.
+The cave fills the viewport behind a translucent HUD, matching the presentation of Sticks in the Woods. Depth, score and treasure float in compact panels with pause and utility controls; Stickolas’s single health panel sits beside the top HUD. Donald’s status and the equipped-weapon panel are omitted to keep the cave clear. Phone portrait and landscape layouts retain touch controls and safe-area spacing. Title and pause overlays cover the HUD controls.
 
-HUD character portraits and the brand portrait reuse the in-game character drawing, cropped to show each face. They are drawn locally on small canvases; the character names remain accessible text. No additional image downloads are required.
+The Stickolas health portrait and brand portrait reuse the in-game character drawing, cropped to show each face. They are drawn locally on small canvases; the character names remain accessible text. No additional image downloads are required.
 
 The Pea Pod Blaster uses the sibling game’s green pod artwork and highlighted, round green pea projectiles. Existing `dart` save/inventory keys retain compatibility; ammunition, firing rate, damage and collision rules are unchanged.
+
+## Mobile controls
+
+The left joystick now follows the thumb-drag controls in Sticks in the Woods: slide to reverse without lifting, with proportional horizontal speed, a center dead zone, and a vertical bias to keep ladder climbing aligned. Jump and the larger Attack button sit together on the right; Weapon and Enter sit above them. The layout respects safe areas and moves the HUD above controls on compact landscape screens.
+
+Pause, overlays, backgrounding, rotation, cancellation and lost pointer capture release held controls. Automated regression checks cover joystick reversal, dead zone, climbing, independent fingers and pause cleanup. Chrome previews checked portrait (390×844) and landscape (844×390 and 568×320); physical iOS/Android multitouch and play feel still need a phone check. The offline shell cache version is bumped for installed games.
+
+## Bottom-row HUD clearance
+
+Only Stickolas has a health display, placed at the top. Donald’s status and the equipped-weapon panel have been removed; Sunspore time remains in the objective text. Browser QA used a local test save with both explorers in the lowest tunnel, including a partially depleted health bar, in portrait and landscape. The fixture is outside the repository and does not modify normal saves or gameplay. Automated checks exercise bottom-row camera clearance at 390×844, 320×568, 844×390 and 568×320. Physical-phone verification remains outstanding.

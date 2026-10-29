@@ -150,3 +150,52 @@ body:has(.overlay:not(.hidden)) .dashboard button { pointer-events: none; }
   .hero-card .portrait { width: 24px; height: 28px; }
   .hero-card em { display: block; width: fit-content; margin: 2px 0 0; }
 }
+
+/* Thumb controls follow Sticks in the Woods: joystick left, combat right. */
+@media (max-width: 900px), (pointer: coarse) {
+  .touch { z-index: 4; background: none; touch-action: none; }
+  #joyArea { position: relative; width: 124px; height: 124px; flex: none; border: 2px solid #acda9d55; background: #18312588; border-radius: 50%; pointer-events: auto; touch-action: none; }
+  #joyArea.pressed { border-color: #d5edb8aa; }
+  #joyThumb { position: absolute; width: 44px; height: 44px; left: calc(50% - 22px); top: calc(50% - 22px); background: #c6f0a7a8; border: 2px solid #ebfdd7b5; border-radius: 50%; box-shadow: 0 0 19px #b8dca53b; pointer-events: none; }
+  .joy-directions { position: absolute; inset: 0; display: grid; place-items: center; font-size: 100px; color: #c6f0a72b; pointer-events: none; }
+  .actions { grid-template-columns: 64px 76px; grid-template-rows: 48px 76px; gap: 8px; align-items: end; }
+  .touch .actions button { width: 100%; border-radius: 50%; }
+  .actions .change-weapon { grid-column: 1; grid-row: 1; }
+  .actions .descend { grid-column: 2; grid-row: 1; }
+  .touch .actions .change-weapon, .touch .actions .descend { width: 48px; height: 48px; justify-self: center; font-size: 19px; background: #182d25cc; }
+  .actions .jump { grid-column: 1; grid-row: 2; height: 64px; }
+  .actions .attack { grid-column: 2; grid-row: 2; height: 76px; font-size: 30px; }
+  .game-bottom { bottom: calc(166px + env(safe-area-inset-bottom)); }
+  body:has(.overlay:not(.hidden)) .touch { visibility: hidden; pointer-events: none; }
+}
+@media (max-width: 360px) {
+  #joyArea { width: 112px; height: 112px; }
+  .actions { gap: 6px; grid-template-columns: 60px 70px; }
+}
+
+/* One compact health display keeps the lowest tunnel unobstructed. */
+.expedition-health { position: absolute; z-index: 2; top: calc(max(16px, env(safe-area-inset-top)) + 132px); left: max(22px, env(safe-area-inset-left)); width: 200px; height: 42px; display: flex; align-items: center; gap: 8px; padding: 6px 10px; color: #e4eacb; background: #0b1b17b3; border: 1px solid #799b6a66; border-radius: 9px; pointer-events: none; }
+.expedition-health .portrait { width: 24px; height: 28px; flex: none; }
+.expedition-health > div { flex: 1; min-width: 0; }
+.health-label { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 7px; letter-spacing: .5px; }
+.health-label small { font: 8px monospace; white-space: nowrap; color: #c3d4b3; }
+.expedition-health .health { margin: 7px 0 0; height: 4px; }
+.game-top { left: 238px; top: calc(max(16px, env(safe-area-inset-top)) + 145px); }
+.is-landing .expedition-health, body:has(.overlay:not(.hidden)) .expedition-health { display: none; }
+@media (max-width: 900px), (pointer: coarse) {
+  .expedition-health { top: calc(max(16px, env(safe-area-inset-top)) + 114px); left: max(14px, env(safe-area-inset-left)); width: 186px; }
+  .game-top { left: 214px; top: calc(max(16px, env(safe-area-inset-top)) + 129px); justify-content: end; }
+  .game-top > span:first-child { display: none; }
+  .toast { top: calc(max(16px, env(safe-area-inset-top)) + 166px); }
+}
+@media (orientation: landscape) and (max-height: 600px) {
+  .expedition-health { top: max(8px, env(safe-area-inset-top)); left: 210px; width: 186px; height: 32px; padding: 3px 8px; }
+  .expedition-health .portrait { width: 19px; height: 23px; }
+  .expedition-health .health { margin-top: 4px; }
+  .game-top { left: max(14px, env(safe-area-inset-left)); top: calc(max(8px, env(safe-area-inset-top)) + 100px); }
+}
+@media (orientation: landscape) and (max-height: 600px) and (max-width: 700px) {
+  .expedition-health { top: calc(max(8px, env(safe-area-inset-top)) + 104px); left: max(14px, env(safe-area-inset-left)); }
+  .game-top { left: 214px; top: calc(max(8px, env(safe-area-inset-top)) + 114px); }
+  .toast { top: calc(max(8px, env(safe-area-inset-top)) + 144px); }
+}
