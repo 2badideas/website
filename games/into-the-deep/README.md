@@ -77,3 +77,9 @@ Only Stickolas has a health display, placed at the top. Donald’s status and th
 ## iPad accidental zoom
 
 The active play surface disables browser touch gestures across the cave and gaps between controls. Non-passive touch, double-click and Safari gesture listeners cancel native zoom during play. Title/pause overlays and open guides retain their normal interactions. Weapon cycling responds on pointer-down, with keyboard/assistive click support, so cancelling native touch clicks does not break it. The offline cache is bumped. Automated tests cover event cancellation, mode/dialog exclusions and single weapon activation; a physical iPad check is still required to confirm native Safari behavior.
+
+## Camera framing
+
+The camera centers horizontally on Stickolas, including at the cave edges. Vertically it centers his body in the clear area measured between the visible HUD and any controls overlapping the explorers’ center lane. Smooth following is constrained so jumps and ladder movement cannot carry his head or feet into those UI regions. Starting, resuming, entering a floor and resizing refresh the framing; the camera may show extra darkness beyond the cave edge.
+
+Automated checks cover all cave rows, both outer horizontal edges, jumps/climbing and sudden transitions across six phone/tablet dimensions. Local Chrome previews cover the top row in portrait and the bottom row in compact landscape and tablet portrait. Native iPad Safari and physical-device play remain separate verification.
