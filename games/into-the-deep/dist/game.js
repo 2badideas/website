@@ -72,7 +72,21 @@ joyArea.onpointermove=e=>{if(e.pointerId===joystick.id){e.preventDefault();moveJ
 joyArea.onpointerup=joyArea.onpointercancel=joyArea.onlostpointercapture=e=>{if(e.pointerId===joystick.id)resetJoystick()};
 joyArea.oncontextmenu=e=>e.preventDefault();
 window.addEventListener('resize',clearControls);
-document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>{if(mode!=='play')return;{const weapons=['spear','rock','dart','bomb'].filter(w=>w==='spear'||ammo[w]>0);equipped=weapons[(weapons.indexOf(equipped)+1)%weapons.length];updateUI();note(names[equipped]+' equipped')}});
+function cycleWeapon(){if(mode!=='play')return;const weapons=['spear','rock','dart','bomb'].filter(w=>w==='spear'||ammo[w]>0);equipped=weapons[(weapons.indexOf(equipped)+1)%weapons.length];updateUI();note(names[equipped]+' equipped')}
+document.querySelectorAll('[data-action]').forEach(b=>{
+  b.onpointerdown=e=>{e.preventDefault();cycleWeapon()};
+  // Keyboard and assistive activation still use click. Pointer input acts once on down.
+  b.onclick=e=>{if(e.detail===0)cycleWeapon()};
+});
+// Safari can interpret two gameplay fingers as pinch/double-tap zoom, including
+// touches between buttons. Cancel native gestures only on the active play surface.
+function preventPlayZoom(e){
+  if(mode!=='play'||$('guide').open||$('installguide').open)return;
+  if(e.target?.closest?.('.game-shell')&&!e.target.closest('#overlay, dialog')&&e.cancelable)e.preventDefault();
+}
+for(const type of ['touchstart','touchmove','touchend','gesturestart','gesturechange','gestureend','dblclick']){
+  document.addEventListener(type,preventPlayZoom,{passive:false});
+}
 document.addEventListener('visibilitychange',()=>{if(document.hidden){clearControls();if(mode==='play'){save();pause()}}});window.addEventListener('blur',clearControls);
 function descend(){if(Math.abs(p.x-(cols*CW-160))>90||Math.abs(p.y-((rows-1)*RH+180))>65){note('Find the glowing cave entrance in the deepest tunnel.');return}mode='celebrate';score+=level*150;heroes.forEach(h=>h.hp=h.max);for(let i=0;i<130;i++)particles.push({x:p.x,y:p.y-60,vx:rnd(-240,240),vy:rnd(-350,-80),life:3,color:['#d7b972','#a8dbae','#dce4c0'][i%3]});beep(660,.5);updateUI();$('root').textContent='“A trace of my cousin’s mycelium! We’re getting closer. You’re ready to go deeper.”';showOverlay('Deeper, together.',`Stratum ${level} explored. +${level*150} points. Both explorers fully healed. A fresh network of tunnels awaits below.`,`Descend to level ${level+1}`,()=>{level++;makeLevel();mode='play';$('overlay').classList.add('hidden');save();$('viewport').focus();note('Health restored · Spear Mk '+weaponTiers.spear+' · A new hollow awaits.')})}
 function burst(x,y,color,n=9){for(let i=0;i<n;i++)particles.push({x,y,vx:rnd(-100,100),vy:rnd(-160,20),life:rnd(.2,.6),color})}function hit(e,d){if(e.hp<=0)return;e.hp-=d;burst(e.x,e.y-25,'#c2b679');beep(190);if(e.hp<=0){score+=e.points;note(`${e.name.toUpperCase()} defeated · +${e.points} points`);if(rand()<.35)loot.push({x:e.x,y:e.r*RH+180,type:rand()<.12?'rare':'common'});updateUI()}}

@@ -73,3 +73,7 @@ Pause, overlays, backgrounding, rotation, cancellation and lost pointer capture 
 ## Bottom-row HUD clearance
 
 Only Stickolas has a health display, placed at the top. Donald’s status and the equipped-weapon panel have been removed; Sunspore time remains in the objective text. Browser QA used a local test save with both explorers in the lowest tunnel, including a partially depleted health bar, in portrait and landscape. The fixture is outside the repository and does not modify normal saves or gameplay. Automated checks exercise bottom-row camera clearance at 390×844, 320×568, 844×390 and 568×320. Physical-phone verification remains outstanding.
+
+## iPad accidental zoom
+
+The active play surface disables browser touch gestures across the cave and gaps between controls. Non-passive touch, double-click and Safari gesture listeners cancel native zoom during play. Title/pause overlays and open guides retain their normal interactions. Weapon cycling responds on pointer-down, with keyboard/assistive click support, so cancelling native touch clicks does not break it. The offline cache is bumped. Automated tests cover event cancellation, mode/dialog exclusions and single weapon activation; a physical iPad check is still required to confirm native Safari behavior.
