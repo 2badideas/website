@@ -203,3 +203,6 @@ body:has(.overlay:not(.hidden)) .dashboard button { pointer-events: none; }
 /* Cover gaps between controls as well as the controls themselves on iPad. */
 .game-shell:has(.overlay.hidden) { touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 header button, .dashboard button, .overlay button { touch-action: manipulation; }
+
+#shieldStatus { color: #dfca8e; font: 8px monospace; white-space: nowrap; }
+#shieldStatus[hidden] { display: none; }

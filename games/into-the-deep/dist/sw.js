@@ -1,4 +1,4 @@
-const CACHE = 'stick-together-shell-v19';
+const CACHE = 'stick-together-shell-v20';
 const SHELL = ['./', './index.html', './style.css', './game.js', './pwa.js', './manifest.webmanifest', './assets/three.module.js', './assets/three.core.js', './assets/story.png', './assets/icon-180.png', './assets/icon-192.png', './assets/icon-512.png', './assets/icon-maskable-512.png', '../../../assets/fonts/satoshi/Satoshi-Variable.woff2', '../../../assets/fonts/inter/InterVariable.woff2'];
 const shellURLs = new Set(SHELL.map(path => new URL(path, self.registration.scope).href));
 self.addEventListener('install', event => {

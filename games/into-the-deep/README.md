@@ -4,7 +4,7 @@ A browser-local Three.js side-scrolling cave adventure starring Stickolas Cage, 
 
 ## Play and fixed roles
 
-Serve the website repository root over HTTP, then open `/games/into-the-deep/dist/`. The game reuses the website’s local Satoshi and Inter fonts from `/assets/fonts/`; include those shared assets if deploying the game separately. WASD/arrows move and climb, Space jumps, J attacks, E descends at the cave entrance, 1–4 select available weapons, and P/Escape pauses. On mobile, the thumb joystick and Jump/Attack/Enter controls support multiple fingers; Weapon cycles available gear.
+Serve the website repository root over HTTP, then open `/games/into-the-deep/dist/`. The game reuses the website’s local Satoshi and Inter fonts from `/assets/fonts/`; include those shared assets if deploying the game separately. WASD/arrows move and climb, Space jumps, J attacks, E descends at the cave entrance, 1–6 select available weapons, and P/Escape pauses. On mobile, the thumb joystick and Jump/Attack/Enter controls support multiple fingers; Weapon cycles available gear.
 
 Stickolas always leads and defends. Donald follows, holding an ever-burning torch. There is no explorer switching. Donald is protected while Stickolas takes combat damage; if Stickolas falls, the expedition ends. At exits, Stickolas recovers fully before entering the next level.
 
@@ -83,3 +83,22 @@ The active play surface disables browser touch gestures across the cave and gaps
 The camera centers horizontally on Stickolas, including at the cave edges. Vertically it centers his body in the clear area measured between the visible HUD and any controls overlapping the explorers’ center lane. Smooth following is constrained so jumps and ladder movement cannot carry his head or feet into those UI regions. Starting, resuming, entering a floor and resizing refresh the framing; the camera may show extra darkness beyond the cave edge.
 
 Automated checks cover all cave rows, both outer horizontal edges, jumps/climbing and sudden transitions across six phone/tablet dimensions. Local Chrome previews cover the top row in portrait and the bottom row in compact landscape and tablet portrait. Native iPad Safari and physical-device play remain separate verification.
+
+## Cave discoveries
+
+New content is introduced gradually, with route supplies guaranteed on newly generated floors:
+
+| First depth | Discoveries |
+| --- | --- |
+| 1 | Bark shield: absorbs three contact hits, refills to three on pickup, carries between floors. Remaining charges appear beside Stickolas’s health. |
+| 2 | Charging beetles warn for 0.7 seconds, rush in a fixed direction, then recover for 1.25 seconds. Hits during recovery deal double damage. Ricochet seeds provide 12 rounds with three wall/floor rebounds per shot. |
+| 3 | Ceiling grubs warn for 0.55 seconds before dropping, then crawl. Amber cave sap halves grounded movement briefly; jump over it. Sticky sap jars provide three traps: Attack places a teal patch that slows enemies for eight gameplay seconds without slowing Stickolas. |
+| 3 | One guarded treasure room, preferably in a side passage. Its chest opens only after its two marked guardians and their slime descendants are defeated. Walking up collects three rare treasures, 25 health and 12 seeds. No door blocks travel or the exit. |
+| 4 | Slimes split into two weaker, smaller slimes. Children never split again and retain guardian membership. |
+| 7 | Two guarded rooms per floor; the count stays capped at two. |
+
+Shields, seeds and trap jars also join the random pickup pool after their introduction. Seeds and traps equip on pickup, use the existing Attack control and join the mobile Weapon cycle. Keyboard 5 selects seeds and 6 selects traps. The spear remains unlimited. Enemy toughness stays bounded; new ordinary enemies take at most four current-tier spear hits before beetle recovery bonuses or slime splitting.
+
+Saves include shield charges, seed/trap ammunition and tiers, enemy behavior states, slime descendants, active traps, wild sap and guarded-cache state. Existing saves retain their current cave without new encounters being injected; new discoveries appear on the next generated floor. Placed traps clear on floor changes. Pause freezes trap duration and enemy behavior timers. The versioned offline cache includes the update.
+
+Automated content cases cover introduction gates through depth 1000, shield hit immunity, beetle charge/recovery, grub drops, bounded splitting, seed wall/floor rebounds and launch damage, trap ownership/slowing/expiry, guarded rewards exactly once, optional exits and old/new saves. Chrome QA used local test saves to clear an actual generated guarded room, collect its reward, place traps with keyboard controls and inspect the phone HUD, full shield and ceiling-grub artwork. Test fixtures stay outside the repository. Native iPad/iPhone/Android multitouch and long-session balance remain physical-device/human play checks.
