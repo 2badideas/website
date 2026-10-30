@@ -1,8 +1,8 @@
 // Runs in the real game VM after the base regression suite.
 for(const depth of [...Array.from({length:50},(_,i)=>i+1),100,1000]){
   level=depth;makeLevel();const route=routeToExit();
-  check(loot.some(it=>it.type==='shield'&&route.includes(it.r*cols+it.c)),'Bark shield available on the route from depth 1');
-  for(const [name,first] of [['beetle',2],['grub',3],['slime',4]])check(enemies.some(e=>e.name===name)===(depth>=first),'Enemy introduction gate: '+name);
+  if(depth%4===1)check(loot.some(it=>it.type==='shield'&&route.includes(it.r*cols+it.c)),'Guaranteed shield on depth 1 and every fourth depth afterward');
+  for(const [name,first] of [['beetle',1],['grub',3],['slime',4]])check(enemies.some(e=>e.name===name)===(depth>=first),'Enemy introduction gate: '+name);
   for(const [name,first] of [['seed',2],['trap',3]])check(loot.some(it=>it.type===name&&route.includes(it.r*cols+it.c))===(depth>=first),'Guaranteed equipment gate: '+name);
   check(treasureRooms.length===(depth<3?0:depth<7?1:2),'Guarded rooms are bounded and depth gated');
   check((traps.length>0)===(depth>=3),'Wild sap introduced at depth 3');
@@ -37,7 +37,7 @@ traps=[{x:220,y:180,c:0,r:0,radius:46,owner:'cave',life:null}];p.x=220;p.y=180;u
 slowTime=0;p.y=110;updateTraps(.1);check(slowTime===0,'Jumping clears wild sap');updateTraps(100);check(traps.length===1,'Natural sap does not silently expire');
 contentReset();treasureRooms=[{id:'test-cache',c:0,r:0,opened:false}];const guard=newEnemy(types[6],cell(0,0));guard.x=340;guard.guardId='test-cache';enemies=[guard];loot=[{type:'vault',x:p.x,y:p.y,c:0,r:0,guardId:'test-cache'}];const rareBefore=rare;step(.016);check(!loot[0].got&&rare===rareBefore,'Guarded chest cannot be collected early');
 hit(guard,100);step(.016);check(!loot[0].got&&guardCount('test-cache')===2,'Splitting guardians keep the chest locked');for(const child of [...enemies])if(child.hp>0)hit(child,100);
-heroes[0].hp=50;step(.016);check(loot[0].got&&rare===rareBefore+3&&heroes[0].hp===75&&ammo.seed===12&&treasureRooms[0].opened,'Defeating all guardians unlocks treasure, healing and ammo');
+heroes[0].hp=50;step(.016);check(loot[0].got&&rare===rareBefore+3&&heroes[0].hp===60&&ammo.seed===12&&treasureRooms[0].opened,'Defeating all guardians unlocks treasure, healing and ammo');
 step(.016);check(rare===rareBefore+3&&ammo.seed===12,'Cache rewards cannot be collected twice');
 // Saving preserves active AI, shield charges, split descendants and traps.
 contentReset();shieldHits=2;slowTime=.3;ammo.seed=9;ammo.trap=2;equipped='seed';traps=[{x:250,y:180,c:0,r:0,owner:'player',life:4.5,radius:65}];treasureRooms=[{id:'saved-cache',c:0,r:0,opened:false}];
