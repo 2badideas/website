@@ -1,14 +1,19 @@
 // Runs in the real game VM after the base regression suite.
-for(const depth of [...Array.from({length:50},(_,i)=>i+1),100,1000]){
+for(let depth=1;depth<=32;depth++){
   level=depth;makeLevel();const route=routeToExit();
-  if(depth%4===1)check(loot.some(it=>it.type==='shield'&&route.includes(it.r*cols+it.c)),'Guaranteed shield on depth 1 and every fourth depth afterward');
-  for(const [name,first] of [['beetle',1],['grub',3],['slime',4]])check(enemies.some(e=>e.name===name)===(depth>=first),'Enemy introduction gate: '+name);
-  for(const [name,first] of [['seed',2],['trap',3]])check(loot.some(it=>it.type===name&&route.includes(it.r*cols+it.c))===(depth>=first),'Guaranteed equipment gate: '+name);
-  check(treasureRooms.length===(depth<3?0:depth<7?1:2),'Guarded rooms are bounded and depth gated');
-  check((traps.length>0)===(depth>=3),'Wild sap introduced at depth 3');
-  for(const room of treasureRooms){check(room.c+room.r>0&&room.r*cols+room.c!==cells.length-1,'Cache never replaces entrance or exit');check(guardCount(room.id)===2,'Each cache starts with exactly two marked guardians');check(loot.some(it=>it.type==='vault'&&it.guardId===room.id),'Each guarded room has its chest')}
+  for(const [name,first] of Object.entries(MOB_UNLOCK)){
+    check(!enemies.some(e=>e.name===name)||depth>=first,'No early mob: '+name);
+    if(depth<32)check(enemies.some(e=>e.name===name)===(depth>=first),'Mob roster: '+name+' at '+depth);
+  }
+  for(const [name,first] of Object.entries(ITEM_UNLOCK))check(!loot.some(it=>it.type===name)||depth>=first,'No early item: '+name);
+  for(const name of ['rock','dart','seed','trap','bomb','sunspore'])if(depth>=ITEM_UNLOCK[name]&&depth<32)check(loot.some(it=>it.type===name&&route.includes(it.r*cols+it.c)),'Guaranteed route supply: '+name);
+  check(treasureRooms.length===(depth<15||depth===32?0:depth<19?1:2),'Guarded cache count at '+depth);
+  check((traps.length>0)===(depth>=14&&depth<32),'Wild sap gate');
+  check(enemies.every(e=>!e.elite||veteranAllowed(e,!!e.guardId)),'Veteran unlock gates');
+  if(depth===32)check(enemies.length===0&&cols===6&&rows===3,'Peaceful short final floor');
+  for(const room of treasureRooms){check(!route.includes(room.r*cols+room.c),'Caches stay optional');check(guardCount(room.id)===2,'Two guardians per cache')}
 }
-console.log('PASS: New enemy/item/room depth gates and guaranteed supplies through depth 1000.');
+console.log('PASS: All 32 floors enforce mob, item, veteran, hazard and cache gates.');
 function contentReset(){
   level=4;makeLevel();mode='play';clearControls();enemies=[];loot=[];shots=[];traps=[];treasureRooms=[];shieldHits=0;slowTime=0;hurtCooldown=0;cool=0;lightBoost=0;
   p={x:220,y:180,vx:0,vy:0,dir:1,on:true};follower={x:160,y:180};heroes=[{hp:100,max:100},{hp:120,max:120}];ammo={rock:0,dart:0,bomb:0,seed:0,trap:0};weaponTiers={spear:1,rock:1,dart:1,bomb:1,seed:1,trap:1};equipped='spear';
@@ -49,3 +54,17 @@ const legacy={...contentSave,ammo:{rock:8,dart:0,bomb:0}};for(const field of ['c
 contentReset();enemies=[{...newEnemy(types[4],cell(0,0)),guardId:'uncleared'}];shieldHits=2;p.x=cols*CW-160;p.y=(rows-1)*RH+180;descend();check(mode==='celebrate','Uncleared treasure rooms do not block the exit');$('start').onclick();check(mode==='play'&&shieldHits===2&&traps.every(s=>s.owner==='cave'),'Next floor carries shield and clears old placed traps');
 for(const state of ['walk','windup','charge','recover'])enemy({...newEnemy(types[4],cell(0,0)),state});for(const state of ['hang','warn','fall','crawl'])enemy({...newEnemy(types[5],cell(0,0)),state});enemy({...newEnemy(types[6],cell(0,0)),small:true});draw();
 console.log('PASS: Shield blocks/refills, beetle windup/charge/recovery, grub drops, bounded slime splitting, seed rebounds/damage/ammo, trap ownership/slow/expiry/pause, locked cache rewards, save compatibility and optional progression.');
+// Campaign finish is proximity-gated, awards once, and survives reload.
+completed=false;level=32;makeLevel();mode='play';clearControls();const beforeFinish=score;
+p.x=140;p.y=180;descend();check(mode==='play'&&!completed,'Cannot win away from cousin');
+p.x=cols*CW-160;p.y=(rows-1)*RH+180;descend();check(mode==='won'&&completed&&level===32,'Cousin interaction ends the expedition');
+check(score===beforeFinish+32*150,'Final floor bonus awarded');descend();winExpedition();check(score===beforeFinish+32*150,'Completion cannot duplicate bonus');
+let victorySave;localStorage.setItem=(k,v)=>victorySave=JSON.parse(v);save();saved=victorySave;start();check(mode==='won'&&completed&&score===beforeFinish+32*150,'Reload restores completed expedition');
+const finalPosition={...p};step(10);check(p.x===finalPosition.x&&p.y===finalPosition.y,'Victory freezes gameplay');pause();check(mode==='won','Pause cannot leave victory');
+// Endless saves beyond the new ending keep equipment and wounds, relocating safely.
+saved={...victorySave,level:60,completed:false,campaignVersion:undefined,heroes:[{hp:43,max:100},{hp:120,max:120}],ammo:{rock:17,dart:3,bomb:2,seed:4,trap:1}};start();
+check(level===32&&!completed&&mode==='play'&&heroes[0].hp===43&&ammo.rock===17&&enemies.length===0&&p.x===130,'Legacy endless run relocates safely to reunion');
+completed=false;level=30;makeLevel();const supplies=routeToExit();for(const name of ['fungi','shield','bomb','dart','seed','sunspore'])check(loot.some(it=>it.type===name&&supplies.includes(it.r*cols+it.c)),'Final resupply provides '+name);
+level=31;makeLevel();check(enemies.filter(e=>e.elite).length>=6,'Final combat floor has three veteran encounters');
+level=32;makeLevel();draw();
+console.log('PASS: Final resupply, combat trial, proximity-gated victory, score idempotence, completed reload and legacy endless relocation.');

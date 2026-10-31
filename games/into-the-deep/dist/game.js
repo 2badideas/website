@@ -53,26 +53,84 @@ function followCamera(dt=0,snap=false){
   camY=Math.max(p.y+8-cameraFrame.bottom,Math.min(p.y-140-cameraFrame.top,camY));
 }
 new ResizeObserver(resizeGame).observe($('viewport'));resizeGame();
-let seed=92317;function rand(){seed=(seed*1664525+1013904223)>>>0;return seed/4294967296}const rnd=(a,b)=>a+rand()*(b-a);let level=1,score=0,common=0,rare=0,cols,rows,cells=[],enemies=[],loot=[],shots=[],particles=[],seen=[],mode='intro',last=0,t=0,cool=0,toastTime=0,camX=0,camY=0,sound=false,audio,saveClock=0;let ammo={rock:0,dart:0,bomb:0,seed:0,trap:0},equipped='spear',weaponTiers={spear:1,rock:1,dart:1,bomb:1,seed:1,trap:1},lightBoost=0,hurtCooldown=0;let shieldHits=0,slowTime=0,traps=[],treasureRooms=[];const keys={};let heroes=[{hp:100,max:100},{hp:120,max:120}];let p={x:140,y:180,vx:0,vy:0,dir:1,on:true};let follower={x:90,y:180};const names={spear:'Wooden spear',rock:'Throwing rocks',dart:'Pea Pod Blaster',bomb:'Sap bombs',seed:'Ricochet seeds',trap:'Sticky sap traps'};const types=[{name:'snake',hp:2,points:25,damage:10,speed:60},{name:'bat',hp:2,points:40,damage:9,speed:75},{name:'rat',hp:3,points:60,damage:14,speed:80},{name:'spider',hp:5,points:100,damage:18,speed:48},{name:'beetle',hp:4,points:90,damage:20,speed:38},{name:'grub',hp:3,points:70,damage:15,speed:40},{name:'slime',hp:4,points:110,damage:12,speed:45}];
+let seed=92317;function rand(){seed=(seed*1664525+1013904223)>>>0;return seed/4294967296}const rnd=(a,b)=>a+rand()*(b-a);let level=1,score=0,common=0,rare=0,cols,rows,cells=[],enemies=[],loot=[],shots=[],particles=[],seen=[],mode='intro',last=0,t=0,cool=0,toastTime=0,camX=0,camY=0,sound=false,audio,saveClock=0;let ammo={rock:0,dart:0,bomb:0,seed:0,trap:0},equipped='spear',weaponTiers={spear:1,rock:1,dart:1,bomb:1,seed:1,trap:1},lightBoost=0,hurtCooldown=0;let shieldHits=0,slowTime=0,traps=[],treasureRooms=[];const keys={};let consumedSpace=false;let heroes=[{hp:100,max:100},{hp:120,max:120}];let p={x:140,y:180,vx:0,vy:0,dir:1,on:true};let follower={x:90,y:180};const names={spear:'Wooden spear',rock:'Throwing rocks',dart:'Pea Pod Blaster',bomb:'Sap bombs',seed:'Ricochet seeds',trap:'Sticky sap traps'};const types=[{name:'snake',hp:2,points:25,damage:10,speed:60},{name:'bat',hp:2,points:40,damage:9,speed:75},{name:'rat',hp:3,points:60,damage:14,speed:80},{name:'spider',hp:5,points:100,damage:18,speed:48},{name:'beetle',hp:4,points:90,damage:20,speed:38},{name:'grub',hp:3,points:70,damage:15,speed:40},{name:'slime',hp:4,points:110,damage:12,speed:45}];
 function note(msg){$('toast').textContent=msg;$('toast').classList.add('show');toastTime=3}function beep(f=400,d=.08){if(!sound)return;audio??=new AudioContext();const o=audio.createOscillator(),g=audio.createGain();o.type='triangle';o.frequency.value=f;g.gain.setValueAtTime(.035,audio.currentTime);g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+d);o.connect(g).connect(audio.destination);o.start();o.stop(audio.currentTime+d)}
 // Depth pacing: equipment keeps ordinary enemies within a small number of hits.
-const BALANCE_VERSION=3,SUNSPORE_SECONDS=12;
+const BALANCE_VERSION=4,SUNSPORE_SECONDS=12,FINAL_LEVEL=32,CAMPAIGN_VERSION=1;
+let completed=false;
+const MOB_UNLOCK={snake:1,bat:2,rat:4,spider:8,grub:12,slime:16,beetle:24};
+const ITEM_UNLOCK={common:1,fungi:1,rock:2,sunspore:3,dart:4,rare:6,shield:8,seed:10,trap:16,bomb:22};
+const FLOOR_NOTES=[
+'Only snakes here. Move, climb, and practice your spear.',
+'Bats above! Throwing rocks let you fight at a distance.',
+'Golden Sunspores reveal the cave for 12 seconds.',
+'Rats move fast. Try the Pea Pod Blaster.',
+'Your spear has strengthened. Familiar foes share these tunnels.',
+'Amber relics wait in optional branches.',
+'A longer journey. Look for living fungi along the route.',
+'Spiders hit hard. Bark shields absorb three hits.',
+'Your spear grows stronger. Watch for small groups.',
+'Ricochet seeds bounce through tunnels.',
+'Explore side passages for ricochet ammunition and relics.',
+'Watch the ceiling. Grubs tremble before dropping.',
+'Another spear upgrade. Look above and ahead.',
+'Amber sap spikes sting. Jump over them!',
+'Guarded caches offer treasure, healing, and ammunition.',
+'Slimes split! Sticky trap jars help control a crowd.',
+'Your spear strengthens. Keep room to move.',
+'Gold-marked veterans are tougher. Choose your fights.',
+'Two guarded caches may await. Their rewards are optional.',
+'Veteran spiders and grubs now guard the deep.',
+'A quieter stretch. Your spear grows stronger again.',
+'Sap bombs break up groups with a powerful blast.',
+'Look for bomb supplies near crowded treasure encounters.',
+'Armored beetles! Jump their charge, then strike while dazed.',
+'Your spear strengthens. Beetles now join mixed encounters.',
+'Veteran slimes split into tougher little ones.',
+'Veteran beetles guard optional treasure. Bombs bypass their armor.',
+'The whole cave stands between us and family. Take recovery stops.',
+'One last spear upgrade. Glowing mycelium points toward my cousin.',
+'The final supply trail: fungi, ammunition, a shield, and sunlight.',
+'One last trial. Use everything you have learned.',
+'My cousin is here! Follow the glow and press E to reunite.'
+];
+function chapter(depth=level){return Math.floor((Math.min(31,depth)-1)/4)}
+function availableMobs(){return types.filter(type=>level>=MOB_UNLOCK[type.name])}
+function veteranAllowed(type,guard=false){return level>=({snake:18,bat:18,rat:18,spider:20,grub:20,slime:26,beetle:guard?27:28}[type.name])}
+function floorNote(){return 'ROOT: '+FLOOR_NOTES[Math.min(FINAL_LEVEL,level)-1]}
+
 function depthTier(depth=level){return 1+Math.floor((depth-1)/4)}
-function caveSize(depth=level){return{cols:Math.min(14,6+Math.floor(4*Math.log2(1+(depth-1)/4))),rows:3+Math.min(2,Math.floor((depth-1)/6))}}
+function caveSize(depth=level){if(depth>=FINAL_LEVEL)return{cols:6,rows:3};return{cols:Math.min(14,5+Math.ceil(depth/3)),rows:depth<7?3:depth<19?4:5}}
 function weaponDamage(weapon=equipped){return({spear:1,rock:2,dart:2,bomb:6,seed:2,trap:0}[weapon]??1)*(weaponTiers[weapon]||1)}
 function treasurePoints(isRare=false){return Math.round((isRare?150:15)*(1+Math.min(4,(level-1)*.08)))}
-function enemyStats(type,elite=false,variant=0){const tier=depthTier(),hits=Math.min(elite?7:type.name==='spider'?6:4,Math.max(elite?5:2,type.hp+variant+(elite?2:0)));return{...type,hp:hits*tier,max:hits*tier,elite,damage:Math.round(type.damage*(1+Math.min(.65,(level-1)*.035))*(elite?1.2:1)),speed:type.speed*(1+Math.min(.3,(level-1)*.025)),points:Math.round(type.points*(1+(level-1)*.12)*(hits/type.hp)*(elite?1.25:1))}}
+function enemyStats(type,elite=false,variant=0){const tier=depthTier(),hits=Math.min(elite?7:type.name==='spider'?6:4,Math.max(elite?5:2,type.hp+variant+(elite?2:0)));return{...type,hp:hits*tier,max:hits*tier,elite,damage:Math.round(type.damage*(1+chapter()*.09)*(elite?1.2:1)),speed:type.speed*(1+Math.min(.3,chapter()*.045)),points:Math.round(type.points*(1+(level-1)*.12)*(hits/type.hp)*(elite?1.25:1))}}
 function routeToExit(){const parents=new Map([[0,-1]]),queue=[0];for(let n=0;n<queue.length;n++){const i=queue[n],a=cells[i],near=[];if(a.right)near.push(i+1);if(a.down)near.push(i+cols);if(a.c>0&&cells[i-1].right)near.push(i-1);if(a.r>0&&cells[i-cols].down)near.push(i-cols);for(const j of near)if(!parents.has(j)){parents.set(j,i);queue.push(j)}}const route=[];for(let i=cells.length-1;i!==-1;i=parents.get(i))route.push(i);return route.reverse()}
-function updateLightUI(){const seconds=Math.ceil(lightBoost);$('objective').textContent=seconds?'☀ FULL LIGHT · '+seconds+'s':'FIND THE WAY DOWN ↘'}
+function updateLightUI(){if(level>=FINAL_LEVEL){$('objective').textContent='FIND ROOT’S COUSIN · E TO REUNITE';return}const seconds=Math.ceil(lightBoost);$('objective').textContent=seconds?'☀ FULL LIGHT · '+seconds+'s':'FIND THE WAY DOWN ↘'}
 function activateSunspore(){lightBoost=SUNSPORE_SECONDS;updateLightUI();note('Sunspore! Donald lights up the whole screen · 12 seconds');beep(880,.25)}
 function boostStrength(){return Math.min(1,lightBoost/2)}
 function cell(c,r){return cells[r*cols+c]}function makeLevel(shape=caveSize()){seed=(level*71639+92317)>>>0;cols=shape.cols;rows=shape.rows;weaponTiers.spear=Math.max(weaponTiers.spear,depthTier());hurtCooldown=0;cells=Array.from({length:cols*rows},(_,i)=>({c:i%cols,r:Math.floor(i/cols),right:false,down:false,visited:false}));const stack=[cell(0,0)];stack[0].visited=true;while(stack.length){const a=stack.at(-1),opts=[[1,0],[-1,0],[0,1],[0,-1]].filter(([dc,dr])=>{let c=a.c+dc,r=a.r+dr;return c>=0&&c<cols&&r>=0&&r<rows&&!cell(c,r).visited});if(!opts.length){stack.pop();continue}const [dc,dr]=opts[Math.floor(rand()*opts.length)],b=cell(a.c+dc,a.r+dr);if(dc===1)a.right=true;if(dc===-1)b.right=true;if(dr===1)a.down=true;if(dr===-1)b.down=true;b.visited=true;stack.push(b)}
 enemies=[];loot=[];shots=[];particles=[];seen=[];traps=[];treasureRooms=[];slowTime=0;
 function place(type,index,offset=rnd(100,340)){const a=cells[index];loot.push({x:a.c*CW+offset,y:a.r*RH+180,type,r:a.r,c:a.c,tier:depthTier()})}
 function spawn(type,a,elite=false){const stats=enemyStats(type,elite,level>=3&&rand()<.35?1:0);const e=newEnemy(type,a,elite,stats);enemies.push(e);return e}
-for(const a of cells){const i=a.r*cols+a.c;if(i===0)continue;if(rand()<Math.min(.7,.56+level*.015)){const roll=rand(),spiderChance=Math.min(.28,.08+(level-1)*.02),ratChance=Math.min(.3,.2+(level-1)*.01);let type=roll<spiderChance?types[3]:roll<spiderChance+ratChance?types[2]:roll<spiderChance+ratChance+.25?types[1]:types[0];if(rand()<(level===1?.12:.2))type=types[4];if(level>=3&&rand()<.13)type=types[5];if(level>=4&&rand()<.16)type=types[6];spawn(type,a,level>=5&&rand()<Math.min(.22,.1+(level-5)*.015));if(level>=4&&rand()<.18)spawn(types[1],a)}if(rand()<.55)place(rand()<.2?'rare':'common',i);if(rand()<.23){const roll=rand();let gear=roll<.45?'rock':roll<.9?'dart':'bomb';if(level>=2&&roll>=.55&&roll<.75)gear='seed';if(level>=3&&roll>=.75&&roll<.85)gear='trap';place(gear,i)}if(rand()<.015)place('shield',i);if(rand()<.035)place('fungi',i);if(rand()<.045)place('sunspore',i)}
-// Supplies along the actual route make each floor viable even with unlucky random drops.
-const route=routeToExit();place('rock',0,285);for(let j=5;j<route.length-1;j+=5)place(j%9===0?'bomb':j%2===0?'dart':'rock',route[j],180);for(const fraction of [.55])place('fungi',route[Math.max(1,Math.floor((route.length-1)*fraction))],300);const sporeRoom=route[Math.max(1,Math.floor((route.length-1)*.3))];if(!loot.some(it=>it.type==='sunspore'&&it.r*cols+it.c===sporeRoom))place('sunspore',sporeRoom,110);
+const pool=availableMobs().filter(type=>level===1||level!==MOB_UNLOCK[type.name]);
+for(const a of cells){
+  const i=a.r*cols+a.c;if(i===0||level===FINAL_LEVEL)continue;
+  if(level<FINAL_LEVEL&&rand()<Math.min(.7,.35+chapter()*.05)){
+    const type=pool[Math.floor(rand()*pool.length)];
+    spawn(type,a,veteranAllowed(type)&&rand()<Math.min(.22,.1+(level-18)*.01));
+    if(level>=9&&rand()<(level>=25?.2:.1))spawn(types[0],a);
+  }
+  if(rand()<.55)place(level>=6&&rand()<.2?'rare':'common',i);
+  const gear=Object.keys(ITEM_UNLOCK).filter(name=>['rock','dart','seed','trap','bomb'].includes(name)&&level>=ITEM_UNLOCK[name]);
+  if(gear.length&&rand()<.23)place(gear[Math.floor(rand()*gear.length)],i);
+  for(const [name,chance] of [['shield',.015],['fungi',.035],['sunspore',.045]])if(level>=ITEM_UNLOCK[name]&&rand()<chance)place(name,i);
+}
+const route=routeToExit();
+if(level>=2&&level<FINAL_LEVEL)place('rock',0,285);
+const supplyTypes=['rock','dart','seed','trap','bomb'].filter(name=>level>=ITEM_UNLOCK[name]);
+for(let j=5;j<route.length-1;j+=5)if(supplyTypes.length&&level<FINAL_LEVEL)place(supplyTypes[Math.floor(j/5)%supplyTypes.length],route[j],180);
+place('fungi',route[Math.max(1,Math.floor((route.length-1)*.55))],300);
+if(level>=3)place('sunspore',route[Math.max(1,Math.floor((route.length-1)*.3))],110);
 populateDiscoveries(route,place,spawn);
 p={x:130,y:180,vx:0,vy:0,dir:1,on:true};follower={x:75,y:180};camX=0;camY=0;updateUI()}
 // New discoveries use the existing Attack/Weapon controls on keyboard and touch.
@@ -80,30 +138,54 @@ function newEnemy(type,a,elite=false,stats=enemyStats(type,elite)){
   return{...stats,x:a.c*CW+rnd(140,320),y:a.r*RH+180-(type.name==='grub'?170:0),r:a.r,c:a.c,timer:0,phase:rnd(0,6),dir:1,state:type.name==='grub'?'hang':'walk',aiTime:0,slow:0};
 }
 function populateDiscoveries(route,place,spawn){
-  const room=fraction=>cells[route[Math.min(route.length-2,Math.max(1,Math.floor((route.length-1)*fraction)))]];
-  if(level%4===1)place('shield',route[1],300);
-  spawn(types[4],room(.25));
-  if(level>=2)place('seed',route[Math.min(2,route.length-2)],135);
-  if(level>=3){
-    place('trap',route[Math.min(3,route.length-2)],135);spawn(types[5],room(.5));
-    for(const a of cells){if(a.c===0&&a.r===0)continue;if(rand()<.13)traps.push({x:a.c*CW+340,y:a.r*RH+180,r:a.r,c:a.c,owner:'cave',life:null,radius:46})}
-    // A visible wild patch is guaranteed; it is away from ladders and cannot block travel.
-    const a=room(.4);if(!traps.some(s=>s.c===a.c&&s.r===a.r))traps.push({x:a.c*CW+340,y:a.r*RH+180,r:a.r,c:a.c,owner:'cave',life:null,radius:46});
+  const index=fraction=>route[Math.min(route.length-2,Math.max(1,Math.floor((route.length-1)*fraction)))];
+  const room=fraction=>cells[index(fraction)];
+  if(level===FINAL_LEVEL){
+    // A peaceful, open reunion chamber; preserve the maze's connecting passages.
+    const last=cell(cols-2,rows-1);last.right=true;
+    return;
+  }
+  if(level>=8&&(level===8||level%4===1))place('shield',route[1],300);
+  for(const name of ['rock','dart','seed','trap','bomb'])if(level>=ITEM_UNLOCK[name])place(name,index(.2+['rock','dart','seed','trap','bomb'].indexOf(name)*.1),135);
+  if(level>=6)place('rare',cells.findIndex(a=>a.c+a.r>0&&!route.includes(a.r*cols+a.c))>0?cells.findIndex(a=>a.c+a.r>0&&!route.includes(a.r*cols+a.c)):index(.7),250);
+  if(level>=14){
+    for(const a of cells)if(a.c+a.r>0&&rand()<.1)traps.push({x:a.c*CW+340,y:a.r*RH+180,r:a.r,c:a.c,owner:'cave',life:null,radius:46});
+    const a=room(.4);traps.push({x:a.c*CW+340,y:a.r*RH+180,r:a.r,c:a.c,owner:'cave',life:null,radius:46});
+    if(level===14){enemies=enemies.filter(e=>e.c!==a.c||e.r!==a.r);traps=traps.filter(v=>v.c!==a.c||v.r!==a.r);traps.push({x:a.c*CW+340,y:a.r*RH+180,r:a.r,c:a.c,owner:'cave',life:null,radius:46})}
+  }
+  if(level>=15){
     const degree=a=>(a.right?1:0)+(a.down?1:0)+(a.c>0&&cell(a.c-1,a.r).right?1:0)+(a.r>0&&cell(a.c,a.r-1).down?1:0);
-    const candidates=cells.filter(a=>a.c+a.r>0&&a.r*cols+a.c!==cells.length-1).sort((a,b)=>((route.includes(a.r*cols+a.c)?10:0)+degree(a))-((route.includes(b.r*cols+b.c)?10:0)+degree(b)));
-    for(const a of candidates.slice(0,level>=7?2:1)){
+    const candidates=cells.filter(a=>a.c+a.r>0&&a.r*cols+a.c!==cells.length-1);
+    const branches=candidates.filter(a=>!route.includes(a.r*cols+a.c)).sort((a,b)=>degree(a)-degree(b));
+    for(const a of branches.slice(0,level>=19?2:1)){
       const id='cache-'+level+'-'+(a.r*cols+a.c);treasureRooms.push({id,c:a.c,r:a.r,opened:false});
-      // Keep the encounter readable: these two guardians replace random occupants.
-      enemies=enemies.filter(e=>e.c!==a.c||e.r!==a.r);traps=traps.filter(s=>s.c!==a.c||s.r!==a.r);
-      for(const [type,offset] of [[types[4],140],[level>=4?types[6]:types[2],300]]){const e=spawn(type,a);e.x=a.c*CW+offset;e.guardId=id}
+      enemies=enemies.filter(e=>e.c!==a.c||e.r!==a.r);traps=traps.filter(v=>v.c!==a.c||v.r!==a.r);
+      for(const [type,offset] of [[level>=24?types[4]:types[3],140],[level>=16?types[6]:types[2],300]]){
+        const e=spawn(type,a,veteranAllowed(type,true)&&level>=27);e.x=a.c*CW+offset;e.guardId=id;
+      }
       loot=loot.filter(it=>it.c!==a.c||it.r!==a.r||!['common','rare'].includes(it.type));
       loot.push({type:'vault',x:a.c*CW+220,y:a.r*RH+180,c:a.c,r:a.r,guardId:id});
     }
   }
-  const quietRoom=fraction=>{const preferred=room(fraction);return treasureRooms.some(a=>a.c===preferred.c&&a.r===preferred.r)?cells.find(a=>a.c+a.r>0&&!treasureRooms.some(v=>v.c===a.c&&v.r===a.r)):preferred};
-  if(level>=3&&!enemies.some(e=>e.name==='grub'))spawn(types[5],quietRoom(.5));
-  if(level>=3&&!traps.length){const a=quietRoom(.4);traps.push({x:a.c*CW+340,y:a.r*RH+180,r:a.r,c:a.c,owner:'cave',life:null,radius:46})}
-  if(level>=4)spawn(types[6],quietRoom(.7));
+  // Each debut has an uncluttered encounter before random mixed groups.
+  for(const [mobIndex,type] of availableMobs().entries()){
+    if(level===MOB_UNLOCK[type.name]||!enemies.some(e=>e.name===type.name)){
+      const a=room(level===MOB_UNLOCK[type.name]?.15:.3+mobIndex*.075);
+      if(level===MOB_UNLOCK[type.name]){enemies=enemies.filter(e=>e.c!==a.c||e.r!==a.r);traps=traps.filter(v=>v.c!==a.c||v.r!==a.r)}
+      spawn(type,a);
+    }
+  }
+  for(const [depth,name] of [[18,'rat'],[20,'spider'],[26,'slime']])if(level===depth&&!enemies.some(e=>e.elite&&e.name===name))spawn(types.find(type=>type.name===name),room(.55),true);
+  if(level===21)enemies=enemies.filter((e,i)=>e.guardId||i%2===0);
+  if(level===23)for(const a of treasureRooms)place('bomb',a.r*cols+a.c,80);
+  if(level>=28)for(const f of [.35,.75]){const a=room(f);enemies=enemies.filter(e=>e.guardId||e.c!==a.c||e.r!==a.r);traps=traps.filter(v=>v.c!==a.c||v.r!==a.r);place('fungi',index(f),90)}
+  if(level===30)for(const [name,f] of [['shield',.15],['fungi',.35],['bomb',.5],['dart',.6],['seed',.7],['sunspore',.85]])place(name,index(f),110);
+  if(level===31){
+    for(const [f,names] of [[.2,['beetle','rat']],[.5,['grub','slime']],[.8,['beetle','spider']]]){
+      const a=room(f);enemies=enemies.filter(e=>e.c!==a.c||e.r!==a.r);traps=traps.filter(v=>v.c!==a.c||v.r!==a.r);
+      names.forEach((name,i)=>{const e=spawn(types.find(v=>v.name===name),a,true);e.x=a.c*CW+130+i*180});
+    }
+  }
 }
 function guardCount(id){return enemies.filter(e=>e.hp>0&&e.guardId===id).length}
 function openVault(it){
@@ -135,7 +217,7 @@ function updateTraps(dt){
     if(trap.life!==null&&trap.life<=0)continue;
     if(trap.owner==='cave'&&Math.abs(p.x-trap.x)<trap.radius&&Math.abs(p.y-trap.y)<18&&p.on&&!keys[' ']&&!keys.k){
       if(!slowTime)note('Stinging sap! Jump over amber spikes.');slowTime=.5;
-      if(hurtCooldown<=0)hurtPlayer(10+Math.min(10,Math.floor((level-1)*.7)));
+      if(hurtCooldown<=0)hurtPlayer(10+Math.min(10,Math.max(0,chapter()-3)*2));
       if(mode!=='play')return;
     }
     for(const e of enemies)if(e.hp>0&&Math.abs(e.x-trap.x)<trap.radius&&Math.abs(e.y-trap.y)<35)e.slow=1.2;
@@ -226,12 +308,14 @@ function drawNewEnemy(e){
 }
 
 function updateUI(){$('depthname').textContent=level===1?'THE UPPER HOLLOW':'THE DEEPER WILDS';$('level').textContent=String(level).padStart(2,'0');$('score').textContent=String(score).padStart(6,'0');$('common').textContent=common;$('rare').textContent=rare;$('hp0').style.width=heroes[0].hp/heroes[0].max*100+'%';$('hptext0').textContent=heroes[0].hp+' / '+heroes[0].max+' HP';$('hero0').style.opacity=heroes[0].hp?1:.45;$('shieldStatus').textContent=shieldHits?'◈ '+shieldHits:'';$('shieldStatus').hidden=!shieldHits;$('area').textContent=level===1?'THE UPPER HOLLOW':`THE DEEPER WILDS · STRATUM ${level}`;updateLightUI()}
-function save(){try{localStorage.setItem('stick-below-v1',JSON.stringify({contentVersion:1,shieldHits,slowTime,traps,treasureRooms,balanceVersion:BALANCE_VERSION,dimensions:{cols,rows},weaponTiers,lightBoost,level,score,common,rare,ammo,equipped,heroes,p,seen,enemies,loot}))}catch{}}let saved;try{saved=JSON.parse(localStorage.getItem('stick-below-v1'))}catch{}makeLevel();if(saved){$('start').innerHTML='Continue the search <span aria-hidden="true">➜</span>'}
-function start(fresh=false){if(saved&&!fresh){({level,score,common,rare,ammo,equipped,heroes}=saved);weaponTiers={spear:depthTier(),rock:depthTier(),dart:depthTier(),bomb:depthTier(),seed:depthTier(),trap:depthTier(),...saved.weaponTiers};ammo={rock:0,dart:0,bomb:0,seed:0,trap:0,...ammo};if(saved.active===1&&heroes[0].hp<=0)heroes[0].hp=Math.max(1,Math.round(heroes[1].hp/heroes[1].max*heroes[0].max));heroes[1].hp=heroes[1].max;makeLevel(saved.dimensions||{cols:5+level,rows:3+Math.min(3,Math.floor(level/4))});p=saved.p;follower={x:p.x-p.dir*55,y:p.y};seen=saved.seen;enemies=saved.enemies;loot=saved.loot;shieldHits=Math.max(0,Math.min(3,Number(saved.shieldHits)||0));slowTime=Math.max(0,Number(saved.slowTime)||0);traps=saved.traps||[];treasureRooms=saved.treasureRooms||[];lightBoost=Math.max(0,Math.min(SUNSPORE_SECONDS,Number(saved.lightBoost)||0));if(saved.balanceVersion!==BALANCE_VERSION){for(const e of enemies){const type=types.find(type=>type.name===e.name);if(!type)continue;const fraction=Math.max(0,e.hp/(e.max||e.hp||1)),stats=enemyStats(type,!!e.elite);if(e.small){stats.max=Math.max(1,Math.ceil(stats.max*.35));stats.damage=Math.max(1,Math.round(stats.damage*.5));stats.speed*=1.35;stats.points=Math.round(stats.points*.25)}Object.assign(e,stats,{hp:Math.ceil(stats.max*fraction)})}for(const item of loot)if(['rock','dart','bomb'].includes(item.type))item.tier=depthTier();if(!loot.some(item=>item.type==='sunspore')){const i=routeToExit()[Math.max(1,Math.floor(routeToExit().length*.3))],a=cells[i];loot.push({type:'sunspore',x:a.c*CW+110,y:a.r*RH+180,r:a.r,c:a.c})}}saved=null}mode='play';document.body.classList.remove('is-landing');$('overlay').classList.add('hidden');$('viewport').focus();updateUI();refreshCameraFrame();followCamera(0,true);note('ROOT: Find Sunspores to brighten Donald’s torch.');beep(520)}
-function pause(){if(mode==='intro'||mode==='celebrate'||mode==='dead')return;if(mode==='play'){mode='paused';showOverlay('A moment to breathe.','The cave can wait. Your expedition is paused.','Resume expedition',()=>{mode='play';$('overlay').classList.add('hidden');$('viewport').focus();refreshCameraFrame();followCamera(0,true)})}else{mode='play';$('overlay').classList.add('hidden');refreshCameraFrame();followCamera(0,true)}$('pause').innerHTML=mode==='paused'?'▶ <span>Resume</span>':'Ⅱ <span>Pause</span>'}
-function showOverlay(title,text,label,fn){clearControls();$('overlay').classList.remove('hidden');$('screenTitle').textContent=title;document.querySelector('.intro .eyebrow').textContent=mode==='paused'?'A MOMENT OF QUIET':mode==='celebrate'?'ANOTHER STEP CLOSER':'THE EXPEDITION ENDS';document.querySelector('.intro p').textContent=text;$('start').innerHTML=label+' <span>↗</span>';$('start').onclick=fn}
-$('landingHelp').onclick=()=>$('help').click();$('landingInstall').onclick=()=>$('install').click();$('start').onclick=()=>start();$('pause').onclick=pause;$('help').onclick=()=>{if(mode==='play')pause();$('guide').showModal()};$('closeguide').onclick=()=>$('guide').close();$('sound').onclick=()=>{sound=!sound;$('sound').textContent=sound?'SOUND ON':'SOUND OFF';beep()};$('restart').onclick=()=>{if(!confirm('Start a new expedition? Your current progress will be replaced.'))return;level=1;score=common=rare=0;ammo={rock:0,dart:0,bomb:0,seed:0,trap:0};equipped='spear';weaponTiers={spear:1,rock:1,dart:1,bomb:1,seed:1,trap:1};lightBoost=0;shieldHits=0;slowTime=0;heroes=[{hp:100,max:100},{hp:120,max:120}];saved=null;makeLevel();save();start(true)};
-window.addEventListener('keydown',e=>{if($('guide').open)return;const k=e.key.toLowerCase();if([' ','arrowup','arrowdown','arrowleft','arrowright'].includes(k))e.preventDefault();if(!keys[k]){if(k==='escape'||k==='p')pause();if(k==='e'&&mode==='play')descend();if('123456'.includes(k)&&mode==='play'){const w=['spear','rock','dart','bomb','seed','trap'][+k-1];if(w==='spear'||ammo[w]>0){equipped=w;updateUI()}}}keys[k]=true});window.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);window.addEventListener('blur',()=>{Object.keys(keys).forEach(k=>keys[k]=false);if(mode==='play')pause()});const touchPointers=new Map();
+function save(){try{localStorage.setItem('stick-below-v1',JSON.stringify({contentVersion:1,campaignVersion:CAMPAIGN_VERSION,completed,shieldHits,slowTime,traps,treasureRooms,balanceVersion:BALANCE_VERSION,dimensions:{cols,rows},weaponTiers,lightBoost,level,score,common,rare,ammo,equipped,heroes,p,seen,enemies,loot}))}catch{}}let saved;try{saved=JSON.parse(localStorage.getItem('stick-below-v1'))}catch{}makeLevel();if(saved){$('start').innerHTML='Continue the search <span aria-hidden="true">➜</span>'}
+function start(fresh=false){if(saved&&!fresh){({level,score,common,rare,ammo,equipped,heroes}=saved);completed=!!saved.completed;const relocate=level>=FINAL_LEVEL&&saved.campaignVersion!==CAMPAIGN_VERSION;level=Math.min(FINAL_LEVEL,level);weaponTiers={spear:depthTier(),rock:depthTier(),dart:depthTier(),bomb:depthTier(),seed:depthTier(),trap:depthTier(),...saved.weaponTiers};ammo={rock:0,dart:0,bomb:0,seed:0,trap:0,...ammo};if(saved.active===1&&heroes[0].hp<=0)heroes[0].hp=Math.max(1,Math.round(heroes[1].hp/heroes[1].max*heroes[0].max));heroes[1].hp=heroes[1].max;makeLevel(saved.dimensions||{cols:5+level,rows:3+Math.min(3,Math.floor(level/4))});p=saved.p;follower={x:p.x-p.dir*55,y:p.y};seen=saved.seen;enemies=saved.enemies;loot=saved.loot;shieldHits=Math.max(0,Math.min(3,Number(saved.shieldHits)||0));slowTime=Math.max(0,Number(saved.slowTime)||0);traps=saved.traps||[];treasureRooms=saved.treasureRooms||[];lightBoost=Math.max(0,Math.min(SUNSPORE_SECONDS,Number(saved.lightBoost)||0));if(saved.balanceVersion!==BALANCE_VERSION){for(const e of enemies){const type=types.find(type=>type.name===e.name);if(!type)continue;const fraction=Math.max(0,e.hp/(e.max||e.hp||1)),stats=enemyStats(type,!!e.elite);if(e.small){stats.max=Math.max(1,Math.ceil(stats.max*.35));stats.damage=Math.max(1,Math.round(stats.damage*.5));stats.speed*=1.35;stats.points=Math.round(stats.points*.25)}Object.assign(e,stats,{hp:Math.ceil(stats.max*fraction)})}for(const item of loot)if(['rock','dart','bomb'].includes(item.type))item.tier=depthTier();if(level>=3&&!loot.some(item=>item.type==='sunspore')){const i=routeToExit()[Math.max(1,Math.floor(routeToExit().length*.3))],a=cells[i];loot.push({type:'sunspore',x:a.c*CW+110,y:a.r*RH+180,r:a.r,c:a.c})}}if(relocate){makeLevel(caveSize());lightBoost=0}saved=null}mode='play';document.body.classList.remove('is-landing');$('overlay').classList.add('hidden');$('viewport').focus();updateUI();refreshCameraFrame();followCamera(0,true);note(floorNote());$('root').textContent=FLOOR_NOTES[Math.min(level,FINAL_LEVEL)-1];beep(520);if(completed)showVictory()}
+function showVictory(){mode='won';showOverlay('Family, found.',`After 32 levels, Stickolas and Donald find ROOT’s cousin glowing in the deep. The mycelium sings again. Expedition complete · ${score} points.`, 'New expedition · Space',()=>$('restart').click());$('root').textContent='“Cousin! We followed your light all the way home.”'}
+function winExpedition(){if(completed)return;completed=true;score+=FINAL_LEVEL*150;updateUI();save();showVictory();beep(880,.6)}
+function pause(){if(mode==='intro'||mode==='celebrate'||mode==='dead'||mode==='won')return;if(mode==='play'){mode='paused';showOverlay('A moment to breathe.','The cave can wait. Your expedition is paused.','Resume expedition',()=>{mode='play';$('overlay').classList.add('hidden');$('viewport').focus();refreshCameraFrame();followCamera(0,true)})}else{mode='play';$('overlay').classList.add('hidden');refreshCameraFrame();followCamera(0,true)}$('pause').innerHTML=mode==='paused'?'▶ <span>Resume</span>':'Ⅱ <span>Pause</span>'}
+function showOverlay(title,text,label,fn){clearControls();$('overlay').classList.remove('hidden');$('screenTitle').textContent=title;document.querySelector('.intro .eyebrow').textContent=mode==='paused'?'A MOMENT OF QUIET':mode==='won'?'FAMILY, FOUND':mode==='celebrate'?'ANOTHER STEP CLOSER':'THE EXPEDITION ENDS';document.querySelector('.intro p').textContent=text;$('start').innerHTML=label+' <span>↗</span>';$('start').onclick=fn}
+$('landingHelp').onclick=()=>$('help').click();$('landingInstall').onclick=()=>$('install').click();$('start').onclick=()=>start();$('pause').onclick=pause;$('help').onclick=()=>{if(mode==='play')pause();$('guide').showModal()};$('closeguide').onclick=()=>$('guide').close();$('sound').onclick=()=>{sound=!sound;$('sound').textContent=sound?'SOUND ON':'SOUND OFF';beep()};$('restart').onclick=()=>{if(!confirm('Start a new expedition? Your current progress will be replaced.'))return;level=1;completed=false;score=common=rare=0;ammo={rock:0,dart:0,bomb:0,seed:0,trap:0};equipped='spear';weaponTiers={spear:1,rock:1,dart:1,bomb:1,seed:1,trap:1};lightBoost=0;shieldHits=0;slowTime=0;heroes=[{hp:100,max:100},{hp:120,max:120}];saved=null;makeLevel();save();start(true)};
+window.addEventListener('keydown',e=>{if($('guide').open||$('installguide').open)return;const k=e.key.toLowerCase();if(k===' '&&consumedSpace){e.preventDefault();return}if([' ','arrowup','arrowdown','arrowleft','arrowright'].includes(k))e.preventDefault();if(k===' '&&['intro','paused','celebrate','dead','won'].includes(mode)){if(!e.repeat&&!keys[k])$('start').click();consumedSpace=true;keys[k]=false;return}if(!keys[k]){if(k==='escape'||k==='p')pause();if(k==='e'&&mode==='play')descend();if('123456'.includes(k)&&mode==='play'){const w=['spear','rock','dart','bomb','seed','trap'][+k-1];if(w==='spear'||ammo[w]>0){equipped=w;updateUI()}}}keys[k]=true});window.addEventListener('keyup',e=>{const k=e.key.toLowerCase();keys[k]=false;if(k===' ')consumedSpace=false});window.addEventListener('blur',()=>{consumedSpace=false;Object.keys(keys).forEach(k=>keys[k]=false);if(mode==='play')pause()});const touchPointers=new Map();
 function releaseTouch(e){const held=touchPointers.get(e.pointerId);if(!held)return;touchPointers.delete(e.pointerId);keys[held.key]=[...touchPointers.values()].some(v=>v.key===held.key);held.button.classList.remove('pressed')}
 function clearControls(){Object.keys(keys).forEach(k=>keys[k]=false);touchPointers.forEach(v=>v.button.classList.remove('pressed'));touchPointers.clear();resetJoystick()}
 document.querySelectorAll('[data-key]').forEach(b=>{b.onpointerdown=e=>{e.preventDefault();if(mode!=='play')return;b.setPointerCapture(e.pointerId);touchPointers.set(e.pointerId,{key:b.dataset.key,button:b});keys[b.dataset.key]=true;b.classList.add('pressed');if(b.dataset.key==='e')descend()};b.onpointerup=b.onpointercancel=b.onlostpointercapture=releaseTouch;b.oncontextmenu=e=>e.preventDefault()});
@@ -267,8 +351,8 @@ for(const type of ['touchstart','touchmove','touchend','gesturestart','gesturech
   document.addEventListener(type,preventPlayZoom,{passive:false});
 }
 document.addEventListener('visibilitychange',()=>{if(document.hidden){clearControls();if(mode==='play'){save();pause()}}});window.addEventListener('blur',clearControls);
-function descend(){if(Math.abs(p.x-(cols*CW-160))>90||Math.abs(p.y-((rows-1)*RH+180))>65){note('Find the glowing cave entrance in the deepest tunnel.');return}mode='celebrate';score+=level*150;heroes[0].hp=Math.min(heroes[0].max,heroes[0].hp+15);heroes[1].hp=heroes[1].max;for(let i=0;i<130;i++)particles.push({x:p.x,y:p.y-60,vx:rnd(-240,240),vy:rnd(-350,-80),life:3,color:['#d7b972','#a8dbae','#dce4c0'][i%3]});beep(660,.5);updateUI();$('root').textContent='“A trace of my cousin’s mycelium! We’re getting closer. You’re ready to go deeper.”';showOverlay('Deeper, together.',`Stratum ${level} explored. +${level*150} points. Stickolas recovers 15 HP. A fresh network of tunnels awaits below.`,`Descend to level ${level+1}`,()=>{level++;makeLevel();mode='play';$('overlay').classList.add('hidden');refreshCameraFrame();followCamera(0,true);save();$('viewport').focus();note('+15 HP at the exit · Spear Mk '+weaponTiers.spear+' · A new hollow awaits.')})}
-function burst(x,y,color,n=9){for(let i=0;i<n;i++)particles.push({x,y,vx:rnd(-100,100),vy:rnd(-160,20),life:rnd(.2,.6),color})}function hit(e,d,sourceX=p.x,weapon=equipped){if(e.hp<=0)return;if(e.name==='beetle'&&['windup','charge'].includes(e.state)&&(sourceX-e.x)*e.dir>=0&&weapon!=='bomb'){burst(e.x,e.y-25,'#ddbd7a',4);if(!e.blockTime){note('Armored charge · jump over, then strike while dazed!');e.blockTime=1.5}return}e.hp-=d*(e.name==='beetle'&&e.state==='recover'?2:1);burst(e.x,e.y-25,'#c2b679');beep(190);if(e.hp<=0){if(e.name==='slime'&&!e.small)splitSlime(e);score+=e.points;note(e.name==='slime'&&!e.small?'Slime split · defeat the two little ones!':`${e.name.toUpperCase()} defeated · +${e.points} points`);if(rand()<.35)loot.push({x:e.x,y:e.r*RH+180,type:rand()<.12?'rare':'common'});updateUI()}}
+function descend(){if(mode!=='play')return;if(Math.abs(p.x-(cols*CW-160))>90||Math.abs(p.y-((rows-1)*RH+180))>65){note(level>=FINAL_LEVEL?'Follow the glowing mycelium to ROOT’s cousin.':'Find the glowing cave entrance in the deepest tunnel.');return}if(level>=FINAL_LEVEL){winExpedition();return}mode='celebrate';score+=level*150;heroes[0].hp=Math.min(heroes[0].max,heroes[0].hp+15);heroes[1].hp=heroes[1].max;for(let i=0;i<130;i++)particles.push({x:p.x,y:p.y-60,vx:rnd(-240,240),vy:rnd(-350,-80),life:3,color:['#d7b972','#a8dbae','#dce4c0'][i%3]});beep(660,.5);updateUI();$('root').textContent='“A trace of my cousin’s mycelium! We’re getting closer. You’re ready to go deeper.”';showOverlay('Deeper, together.',`Stratum ${level} explored. +${level*150} points. Stickolas recovers 15 HP. A fresh network of tunnels awaits below.`,`Descend to level ${level+1} · Space`,()=>{level++;makeLevel();mode='play';$('overlay').classList.add('hidden');refreshCameraFrame();followCamera(0,true);save();$('viewport').focus();note(floorNote());$('root').textContent=FLOOR_NOTES[level-1]})}
+function burst(x,y,color,n=9){for(let i=0;i<n;i++)particles.push({x,y,vx:rnd(-100,100),vy:rnd(-160,20),life:rnd(.2,.6),color})}function hit(e,d,sourceX=p.x,weapon=equipped){if(e.hp<=0)return;if(e.name==='beetle'&&['windup','charge'].includes(e.state)&&(sourceX-e.x)*e.dir>=0&&weapon!=='bomb'){burst(e.x,e.y-25,'#ddbd7a',4);if(!e.blockTime){note('Armored charge · jump over, then strike while dazed!');e.blockTime=1.5}return}e.hp-=d*(e.name==='beetle'&&e.state==='recover'?2:1);burst(e.x,e.y-25,'#c2b679');beep(190);if(e.hp<=0){if(e.name==='slime'&&!e.small)splitSlime(e);score+=e.points;note(e.name==='slime'&&!e.small?'Slime split · defeat the two little ones!':`${e.name.toUpperCase()} defeated · +${e.points} points`);if(rand()<.35)loot.push({x:e.x,y:e.r*RH+180,type:level>=6&&rand()<.12?'rare':'common'});updateUI()}}
 function attack(){
   if(cool>0||heroes[0].hp<=0)return;
   cool=equipped==='bomb'?.7:equipped==='trap'?.5:equipped==='spear'?.42:.35;beep(330);
@@ -285,7 +369,7 @@ function attack(){
   }
 }
 function step(dt){t+=dt;cool=Math.max(0,cool-dt);toastTime-=dt;if(toastTime<=0)$('toast').classList.remove('show');if(mode!=='play'){for(const a of particles){a.x+=a.vx*dt;a.y+=a.vy*dt;a.vy+=240*dt;a.life-=dt}particles=particles.filter(a=>a.life>0);return}lightBoost=Math.max(0,lightBoost-dt);hurtCooldown=Math.max(0,hurtCooldown-dt);updateLightUI();updateTraps(dt);if(mode!=='play')return;const r=Math.max(0,Math.min(rows-1,Math.floor((p.y+5)/RH))),c=Math.max(0,Math.min(cols-1,Math.floor(p.x/CW))),a=cell(c,r),floor=r*RH+180;seen[r*cols+c]=true;const joyX=Math.abs(joystick.x)>Math.abs(joystick.y)*.65?joystick.x:0;let dir=Math.max(-1,Math.min(1,(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0)+joyX));p.vx=dir*210*(slowTime>0?.5:1);if(dir)p.dir=Math.sign(dir);p.x+=p.vx*dt;let min=c*CW+54,max=(c+1)*CW-54;if(c>0&&cell(c-1,r).right)min-=CW;if(a.right)max+=CW;p.x=Math.max(min,Math.min(max,p.x));p.x=Math.max(25,Math.min(cols*CW-25,p.x));let climbed=false;const lx=c*CW+CW*.52;if(Math.abs(p.x-lx)<49){if((keys.s||keys.arrowdown||joystick.y>.35)&&a.down){p.y+=150*dt;climbed=true}if((keys.w||keys.arrowup||joystick.y<-.35)&&r>0&&cell(c,r-1).down){p.y-=150*dt;climbed=true}if((keys.w||keys.arrowup||joystick.y<-.35)&&a.down&&p.y>floor+5){p.y-=150*dt;climbed=true}}if(!climbed){if(p.y>floor&&p.y<floor+RH-15&&a.down&&Math.abs(p.x-lx)<49){p.vy=0}else{if((keys[' ']||keys.k)&&p.on){p.vy=-390;p.on=false;beep(300)}p.vy+=980*dt;p.y+=p.vy*dt;if(p.y>=floor){p.y=floor;p.vy=0;p.on=true}}}else{p.vy=0;p.on=false}if(keys.j||keys.f)attack();if(Math.abs(follower.y-p.y)>90){follower.y=p.y;follower.x=p.x-p.dir*55}else{follower.x+=(p.x-p.dir*60-follower.x)*Math.min(1,dt*4);follower.y+=(p.y-follower.y)*Math.min(1,dt*6)}
-for(const e of [...enemies]){if(e.hp<=0)continue;updateEnemy(e,dt);if(Math.abs(e.y-p.y)<(e.name==='beetle'?38:e.small?24:e.name==='bat'||e.name==='grub'&&e.state==='fall'?65:44)&&Math.abs(e.x-p.x)<(e.small?25:39)&&e.timer<=0&&hurtCooldown<=0){e.timer=.9;hurtPlayer(e.damage);if(mode==='dead')return}}
+for(const e of [...enemies]){if(e.hp<=0)continue;updateEnemy(e,dt);if(Math.abs(e.y-p.y)<(e.name==='beetle'?38:e.small?24:e.name==='bat'||e.name==='grub'&&e.state==='fall'?65:44)&&Math.abs(e.x-p.x)<(e.small?25:39)&&e.timer<=0&&hurtCooldown<=0){e.timer=.9;hurtPlayer(e.damage);if(mode==='dead'||mode==='won')return}}
 for(const it of loot){if(it.got)continue;if(Math.abs(p.x-it.x)<36&&Math.abs(p.y-it.y)<55){if(it.type==='vault'&&guardCount(it.guardId)){if(!it.noticed){note('Guarded treasure · defeat its guardians to open');it.noticed=true}continue}it.got=true;if(it.type==='common'){common++;const points=treasurePoints();score+=points;note('Common treasure · +'+points+' points')}else if(it.type==='rare'){rare++;const points=treasurePoints(true);score+=points;note('Rare amber relic · +'+points+' points')}else if(it.type==='fungi'){heroes[0].hp=Math.min(heroes[0].max,heroes[0].hp+15);note('Living fungi · +15 health');$('root').textContent='“Living fungi! A small beginning. Keep looking, explorers.”'}else if(it.type==='sunspore'){activateSunspore()}else if(it.type==='shield'){shieldHits=3;note('Bark shield · absorbs the next 3 hits')}else if(it.type==='vault'){openVault(it)}else{ammo[it.type]=(ammo[it.type]||0)+({rock:8,dart:15,bomb:3,seed:12,trap:3}[it.type]||0);weaponTiers[it.type]=Math.max(weaponTiers[it.type]||1,it.tier||depthTier());equipped=it.type;note(names[it.type]+(it.type==='trap'?'':' Mk '+weaponTiers[it.type])+' equipped · Attack to use')}burst(it.x,it.y-20,'#b9d391');beep(720,.15);updateUI();save()}}
 for(const s of shots)updateShot(s,dt);shots=shots.filter(s=>s.life>0);for(const a of particles){a.x+=a.vx*dt;a.y+=a.vy*dt;a.vy+=240*dt;a.life-=dt}particles=particles.filter(a=>a.life>0);followCamera(dt);saveClock+=dt;if(saveClock>3){saveClock=0;save()}}
 function path(points,fill,stroke,width=2){ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=width;ctx.stroke()}}function line(x,y,x2,y2,color,w=2){ctx.strokeStyle=color;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x2,y2);ctx.stroke()}function circle(x,y,r,color){ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill()}function glow(x,y,r,color){let g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,color);g.addColorStop(1,'transparent');ctx.fillStyle=g;ctx.fillRect(x-r,y-r,r*2,r*2)}
@@ -312,13 +396,25 @@ function enemy(e){if(e.hp<=0)return;ctx.save();ctx.translate(e.x,e.y);ctx.scale(
 if(e.name==='spider'){for(let i=0;i<4;i++){let v=Math.sin(t*8+i)*3;line(-6,-18,-20-i*3,-27+i*8+v,'#969b88',2);line(-20-i*3,-27+i*8+v,-29-i*3,-6+i,'#969b88',2);line(6,-18,20+i*3,-27+i*8-v,'#969b88',2);line(20+i*3,-27+i*8-v,29+i*3,-6+i,'#969b88',2)}circle(0,-21,15,'#666e62');circle(0,-10,10,'#8b927c');circle(-4,-9,2,'#caa868');circle(4,-9,2,'#caa868')}if(e.elite){ctx.fillStyle='#d6b978';ctx.font='7px monospace';ctx.textAlign='center';ctx.fillText('VETERAN',0,-65)}if(e.hp<e.max||e.elite){ctx.fillStyle='#353c2c';ctx.fillRect(-20,-55,40,3);ctx.fillStyle='#c49476';ctx.fillRect(-20,-55,40*e.hp/e.max,3)}ctx.restore()}
 // Donald is the only cave light source. The outer falloff is fully opaque.
 const TORCH_FALLOFF=[[0,1],[.18,1],[.45,.88],[.72,.4],[1,0]];
+function drawMycelium(){for(const i of routeToExit()){const a=cells[i],x=a.c*CW,y=a.r*RH+180;line(x+20,y+3,x+CW-20,y+3,'#92e9c477',2);for(let j=0;j<5;j++){line(x+65+j*70,y+3,x+80+j*70,y-10,'#a8f6da88',2);if(j%2===0)mushroom(x+80+j*70,y,.7,'#b9ffda')}}}
+function drawCousin(x,y){
+  glow(x,y-95,280,'#9dffd477');glow(x,y-100,160,'#d5ffd966');
+  // Broad cap and thick stem, with a friendly face at explorer height.
+  ctx.fillStyle='#a2d9b0';ctx.beginPath();ctx.ellipse(x,y-65,35,70,0,0,7);ctx.fill();
+  ctx.fillStyle='#91e3bb';ctx.beginPath();ctx.ellipse(x,y-140,110,57,0,Math.PI,Math.PI*2);ctx.fill();
+  line(x-100,y-140,x+100,y-140,'#e4ffd2',5);
+  for(const [dx,dy,r] of [[-60,-158,8],[-20,-180,11],[35,-176,9],[70,-155,6]])circle(x+dx,y+dy,r,'#e6ffd7');
+  circle(x-12,y-74,4,'#183f36');circle(x+12,y-74,4,'#183f36');
+  ctx.strokeStyle='#285445';ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y-64,10,0,Math.PI);ctx.stroke();
+  ctx.fillStyle='#d9ffe1';ctx.font='11px monospace';ctx.textAlign='center';ctx.fillText('ROOT’S COUSIN',x,y-220);ctx.fillText('E · REUNITE',x,y+26);
+}
 function torchLight(){return{x:follower.x+p.dir*28,y:follower.y-96,radius:330+Math.sin(t*7)*5+Math.sin(t*13)*3}}
 function visibilityAt(x,y){const light=torchLight(),distance=Math.hypot(x-light.x,y-light.y)/light.radius;for(let i=1;i<TORCH_FALLOFF.length;i++){const [edge,value]=TORCH_FALLOFF[i],[previous,prevValue]=TORCH_FALLOFF[i-1];if(distance<=edge){const normal=prevValue+(value-prevValue)*(distance-previous)/(edge-previous);return boostStrength()+(1-boostStrength())*normal}}return boostStrength()}
-function drawTorchlight(){const light=torchLight(),x=light.x-Math.round(camX),y=light.y-Math.round(camY);ctx.save();ctx.globalCompositeOperation='screen';glow(x,y,140,'#ffb45b38');ctx.restore();darkness.globalCompositeOperation='source-over';darkness.fillStyle='#020605';darkness.fillRect(0,0,W,H);darkness.globalCompositeOperation='destination-out';const halo=darkness.createRadialGradient(x,y,0,x,y,light.radius);for(const [edge,value]of TORCH_FALLOFF)halo.addColorStop(edge,`rgba(0,0,0,${value})`);darkness.fillStyle=halo;darkness.fillRect(0,0,W,H);darkness.globalCompositeOperation='source-over';ctx.save();ctx.globalAlpha=1-boostStrength();ctx.drawImage(darknessCanvas,0,0);ctx.restore()}
+function drawTorchlight(){const light=torchLight(),x=light.x-Math.round(camX),y=light.y-Math.round(camY);ctx.save();ctx.globalCompositeOperation='screen';glow(x,y,140,'#ffb45b38');ctx.restore();darkness.globalCompositeOperation='source-over';darkness.fillStyle='#020605';darkness.fillRect(0,0,W,H);darkness.globalCompositeOperation='destination-out';const halo=darkness.createRadialGradient(x,y,0,x,y,light.radius);for(const [edge,value]of TORCH_FALLOFF)halo.addColorStop(edge,`rgba(0,0,0,${value})`);darkness.fillStyle=halo;darkness.fillRect(0,0,W,H);if(level>=FINAL_LEVEL){const cx=cols*CW-160-Math.round(camX),cy=(rows-1)*RH+80-Math.round(camY),g=darkness.createRadialGradient(cx,cy,20,cx,cy,380);g.addColorStop(0,'rgba(0,0,0,1)');g.addColorStop(.6,'rgba(0,0,0,.85)');g.addColorStop(1,'rgba(0,0,0,0)');darkness.fillStyle=g;darkness.fillRect(0,0,W,H)}darkness.globalCompositeOperation='source-over';ctx.save();ctx.globalAlpha=1-boostStrength();ctx.drawImage(darknessCanvas,0,0);ctx.restore()}
 function draw(){ctx.fillStyle='#101b1b';ctx.fillRect(0,0,W,H);let bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#111e20');bg.addColorStop(.65,'#1b2c2a');bg.addColorStop(1,'#14201f');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);for(let i=0;i<28;i++){let x=((i*163-camX*.22)%(W+160)+W+160)%(W+160)-80;let y=-50+(i%4)*42-camY*.1;path([[x-55,y],[x+46,y-10],[x+20,y+180+(i%3)*60]],i%2?'#172526':'#1a2a2b');}ctx.save();ctx.translate(-Math.round(camX),-Math.round(camY));
 let lo=Math.max(0,Math.floor(camX/CW)-1),hi=Math.min(cols-1,Math.ceil((camX+W)/CW));for(let r=0;r<rows;r++)for(let c=lo;c<=hi;c++){let a=cell(c,r),x=c*CW,y=r*RH+180;glow(x+220,y-85,210,'#6685790b');path([[x,y+8],[x+CW,y+8],[x+CW,y+RH-10],[x,y+RH-10]],'#26332c');path([[x,y+11],[x+80,y+4],[x+155,y+9],[x+244,y+1],[x+320,y+8],[x+CW,y+3],[x+CW,y+30],[x,y+32]],'#52604a');line(x,y+8,x+CW,y+8,'#7c8660',2);for(let i=0;i<17;i++){let xx=x+i*27+Math.sin(i*43+c)*8,yy=y+40+(i%4)*26;path([[xx,yy],[xx+25,yy-5],[xx+39,yy+15],[xx+5,yy+22]],['#2d3b30','#303f33','#344237'][i%3]);line(xx+5,y+9,xx+9,y+2,'#88926777',1)}if(!a.right){const wx=x+CW;path([[wx-46,y-240],[wx+43,y-246],[wx+54,y-193],[wx+38,y-131],[wx+49,y-54],[wx+40,y+18],[wx-44,y+17],[wx-56,y-34],[wx-40,y-91],[wx-49,y-162]],'#344238','#687256',3);path([[wx-46,y-240],[wx-20,y-205],[wx-27,y-146],[wx-15,y-83],[wx-29,y-31],[wx-22,y+15],[wx-44,y+17],[wx-56,y-34],[wx-40,y-91],[wx-49,y-162]],'#4a5843');path([[wx+22,y-240],[wx+43,y-246],[wx+54,y-193],[wx+38,y-131],[wx+49,y-54],[wx+40,y+18],[wx+17,y+17],[wx+29,y-58],[wx+17,y-126]],'#22342d');for(let k=0;k<5;k++){let yy=y-215+k*46;line(wx-27,yy,wx+25,yy+12,'#71805a55',2);line(wx+4,yy+7,wx-8,yy+36,'#152a2455',2)}mushroom(wx-45,y,.7);line(wx-37,y-199,wx-34,y-150,'#81965a',3)}if(a.down){let lx=x+CW*.52;ctx.fillStyle='#111f1b';ctx.fillRect(lx-27,y+4,54,RH-14);line(lx-20,y-5,lx-20,y+RH,'#aca577',3);line(lx+20,y-5,lx+20,y+RH,'#aca577',3);for(let j=0;j<RH;j+=19)line(lx-20,y+j,lx+20,y+j,'#a69a6c',3);glow(lx,y+90,75,'#b8b36b15')}for(let j=0;j<6;j++){let xx=x+50+j*69,yy=y-RH+32;path([[xx-13,yy-30],[xx+12,yy-24],[xx+3,yy+20+(j%3)*13]],'#35453c');}for(let j=0;j<7;j++){let xx=x+25+((j*89+c*53)%CW);if(j%3===0)mushroom(xx,y-1,.6+(j%2)*.45);else{line(xx,y,xx-7,y-15,'#657c58',2);line(xx,y,xx+5,y-22,'#6f845c',2);line(xx,y-1,xx+13,y-9,'#536c4e',2)}}}
 // An arched passage recedes into the rock, with stairs and living fungi.
-const ex=cols*CW-160,ey=(rows-1)*RH+180;glow(ex,ey-55,145,'#83cfaa25');
+const ex=cols*CW-160,ey=(rows-1)*RH+180;if(level>=FINAL_LEVEL){drawCousin(ex,ey)}else{glow(ex,ey-55,145,'#83cfaa25');
 path([[ex-75,ey+2],[ex-77,ey-54],[ex-66,ey-104],[ex-41,ey-135],[ex-5,ey-149],[ex+33,ey-139],[ex+63,ey-110],[ex+77,ey-67],[ex+73,ey+2]],'#415448','#7d8b65',3);
 path([[ex-55,ey],[ex-57,ey-51],[ex-45,ey-97],[ex-25,ey-119],[ex+2,ey-128],[ex+31,ey-111],[ex+49,ey-82],[ex+55,ey-43],[ex+52,ey]],'#071714','#263e33',2);
 path([[ex-55,ey],[ex-25,ey-30],[ex+5,ey-45],[ex+26,ey-43],[ex+52,ey]],'#233d31');
@@ -326,6 +422,7 @@ for(let i=0;i<5;i++){let z=i/5,yy=ey-i*8;line(ex-49+z*55,yy,ex+46-z*21,yy,'#8a9e
 for(let i=0;i<6;i++){let angle=Math.PI+i*Math.PI/5;let xx=ex+Math.cos(angle)*65,yy=ey-48+Math.sin(angle)*84;line(xx-8,yy-6,xx+9,yy+9,'#203a2c',3)}
 mushroom(ex-68,ey,1.4);mushroom(ex+67,ey,.9);mushroom(ex+49,ey-11,.55);glow(ex+13,ey-64,37,'#7ecca92a');
 ctx.fillStyle='#c6dfb5';ctx.font='9px monospace';ctx.textAlign='center';ctx.fillText('THE WAY DOWN',ex,ey-166);ctx.fillText('↓  ENTER THE CAVE',ex,ey+24);
+}if(level>=29)drawMycelium();
 drawTraps();drawTreasureRooms();
 for(const it of loot){if(it.got||it.x<camX-50||it.x>camX+W+50)continue;let x=it.x,y=it.y;if(drawDiscovery(it))continue;if(it.type==='fungi'){mushroom(x,y,1.5);continue}if(it.type==='sunspore'){const bob=Math.sin(t*3+x)*3;glow(x,y-22+bob,55,'#f2ce6744');circle(x,y-20+bob,10,'#eac76f');circle(x,y-20+bob,5,'#fff4bc');for(let ray=0;ray<8;ray++){const angle=ray*Math.PI/4+t*.3;line(x+Math.cos(angle)*14,y-20+bob+Math.sin(angle)*14,x+Math.cos(angle)*21,y-20+bob+Math.sin(angle)*21,'#e1c878',2)}ctx.fillStyle='#efdaa2';ctx.font='8px monospace';ctx.textAlign='center';ctx.fillText('SUNSPORE',x,y-52);continue}glow(x,y-15,40,it.type==='rare'?'#d4b26424':'#b9c89212');if(it.type==='common'||it.type==='rare'){ctx.fillStyle=it.type==='rare'?'#ad8f4c':'#8c8053';ctx.fillRect(x-13,y-23,26,21);path([[x-13,y-23],[x-10,y-30],[x+10,y-30],[x+13,y-23]],it.type==='rare'?'#c6aa66':'#b1a16d');line(x-13,y-20,x+13,y-20,'#d7bd7b',2);ctx.fillStyle='#e2ca8b';ctx.fillRect(x-2,y-23,4,7)}else if(it.type==='rock'){circle(x-5,y-8,8,'#aab0a0');circle(x+6,y-6,6,'#7c8e81')}else if(it.type==='dart'){drawPeaPod(x-22,y-13,.65)}else{circle(x,y-13,11,'#d1a859');line(x,y-22,x+4,y-30,'#9baf74',3)}ctx.fillStyle='#bec5a0';ctx.font='7px monospace';ctx.textAlign='center';ctx.fillText((it.type==='dart'?'PEA POD BLASTER':it.type.toUpperCase())+(it.tier>1&&['rock','dart','bomb'].includes(it.type)?' Mk '+it.tier:''),x,y-40)}
 for(const e of enemies)if(e.x>camX-80&&e.x<camX+W+80)enemy(e);hero(follower.x,follower.y,true,p.dir,false);hero(p.x,p.y,false,p.dir,true);for(const s of shots){if(s.type==='dart')drawPea(s);else if(s.type==='seed'){drawSeeds(s.x,s.y,.7)}else circle(s.x,s.y,s.type==='bomb'?7:5,s.type==='bomb'?'#d6ae56':'#c3cab0')}for(const a of particles)circle(a.x,a.y,2,a.color);ctx.restore();
