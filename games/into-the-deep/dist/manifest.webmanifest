@@ -2,7 +2,7 @@
   "id": "./",
   "name": "Into the Deep: The Search for ROOT’s Cousin",
   "short_name": "Into the Deep",
-  "description": "Join Stickolas Cage and Donald Stump on an endless cave adventure to find ROOT’s long-lost cousin.",
+  "description": "Join Stickolas Cage and Donald Stump on a 32-level cave adventure to find ROOT’s long-lost cousin.",
   "start_url": "./?source=pwa",
   "scope": "./",
   "display": "fullscreen",
