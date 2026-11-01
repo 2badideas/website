@@ -148,6 +148,23 @@ button:focus-visible { outline: 3px solid var(--cream); outline-offset: 2px; }
   #placing .acts { width: 100%; }
   #placing .acts button { flex: 1; }
 }
+#party { position: fixed; inset: 0; display: grid; place-items: center; z-index: 25; overflow-y: auto;
+  padding: calc(env(safe-area-inset-top, 0px) + 16px) max(16px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 16px) max(16px, env(safe-area-inset-left, 0px));
+  background: radial-gradient(ellipse at center, rgba(40, 24, 6, .35), rgba(14, 10, 4, .72)); }
+#party .card2 { max-width: 460px; border-color: #ffd34d; box-shadow: 0 0 0 4px rgba(255, 211, 77, .25), 0 0 60px rgba(255, 190, 40, .45), 0 3px 0 rgba(0,0,0,.25); text-align: center; align-items: center; animation: partyIn .7s cubic-bezier(.2, 1.6, .4, 1); }
+#party .big { font: 800 clamp(64px, 20vw, 104px)/.9 var(--display); color: var(--sap); text-shadow: 0 4px 0 #7a4a0c, 0 0 30px rgba(255, 200, 60, .6); margin: 4px 0 0; }
+#party .big small { display: block; font-size: .32em; letter-spacing: .12em; text-transform: uppercase; color: var(--cream); text-shadow: 0 2px 0 #7a4a0c; margin-top: 6px; }
+#party p { font-size: 15px; line-height: 1.5; max-width: 38ch; }
+#party .stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; width: 100%; }
+#party .stat { background: rgba(0,0,0,.24); border: 1px solid rgba(255, 211, 77, .45); border-radius: 12px; padding: 8px; }
+#party .stat b { display: block; font: 800 24px var(--display); color: var(--sap); font-variant-numeric: tabular-nums; }
+#party .stat span { font-size: 12px; color: var(--muted); font-weight: 700; }
+#party .warn { font-size: 13px; color: #ffb199; font-weight: 800; }
+#party .row { justify-content: center; }
+#confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 30; }
+.badge { color: #ffd34d !important; font-weight: 800 !important; }
+@keyframes partyIn { from { transform: scale(.6); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { #party .card2 { animation: none; } }
 [hidden] { display: none !important; }
 @media (prefers-reduced-motion: reduce) { .toast { animation: none; } }
 </style>
@@ -165,6 +182,7 @@ button:focus-visible { outline: 3px solid var(--cream); outline-offset: 2px; }
         <div class="row"><div id="sun"></div><div id="time">Day 1 · 7:30 AM</div></div>
         <div class="row">Pod <div class="bar"><div id="podbar"></div></div></div>
         <div class="row" id="pop">Village: 1</div>
+        <div class="row badge" id="badge" hidden></div>
       </div>
       <div class="btnrow"><button class="mini" id="speedBtn" type="button" aria-pressed="false">Fast ▸▸</button><button class="mini" id="soundBtn" type="button" aria-pressed="true" aria-label="Sound">🔊</button><button class="mini" id="menuBtn" type="button">Menu</button></div>
       <div id="raid" class="panel" hidden></div>
@@ -179,6 +197,9 @@ button:focus-visible { outline: 3px solid var(--cream); outline-offset: 2px; }
 </div>
 
 <div id="toasts" aria-live="polite"></div>
+
+<div id="party" hidden><div class="card2 panel" id="partyCard" role="dialog" aria-modal="true" aria-label="Celebration"></div></div>
+<canvas id="confetti" aria-hidden="true" hidden></canvas>
 
 <div id="pause" class="overlay" hidden><div class="card2 panel" id="pauseCard" role="dialog" aria-modal="true" aria-label="Game menu"></div></div>
 
@@ -260,7 +281,7 @@ const resName = id => RES.find(r => r.id === id).name;
 const resColor = id => RES.find(r => r.id === id).color;
 const CROP = { name: "Sap Sprout", stages: 3, sec: 12, yield: 3 };
 const BDEF = {
-  plot: { name: "Garden Plot", cost: { wood: 2 }, size: [1, 1], tall: .7, desc: "More soil for Sap Sprouts." },
+  plot: { name: "Garden Plot", cost: { wood: 2 }, size: [1, 1], tall: .7, desc: "More soil for Sap Sprouts. Each one costs a bit more." },
   hut: { name: "Hollow Hut", cost: { wood: 8, stone: 2 }, size: [2, 1], hp: 40, tall: 1.8, desc: "A villager moves in to farm and fix things." },
   turret: { name: "Sap Turret", cost: { wood: 4, stone: 3 }, size: [1, 1], hp: 30, tall: 1.2, range: 4.5, desc: "Shoots wildlife. Spends Sap from your stockpile." },
   wall: { name: "Root Wall", cost: { wood: 2 }, size: [1, 1], hp: 30, tall: 1.2, desc: "Wildlife has to go around it or chew through." },
@@ -279,6 +300,8 @@ const EDEF = {
   beaver: { name: "Beaver", hp: 16, speed: 1.6, field: "wood", dps: 2, reward: { wood: 3 } },
   hornet: { name: "Hornet", hp: 6, speed: 3.3, fly: true, dps: 1 },
   mole: { name: "Mole", hp: 12, speed: 2.0, dig: true, dps: 0, reward: { stone: 2 } },
+  raccoon: { name: "Bandit Raccoon", hp: 26, speed: 5.2, thief: true, dps: 0 },
+  bruiser: { name: "Bruiser Beaver", hp: 45, speed: 1.4, field: "wood", dps: 4, reward: { wood: 6 } },
   boss: { name: "Big Chomp", hp: 220, speed: 1.05, boss: true, dps: 7, reward: { wood: 15, stone: 10, sap: 10 } },
 };
 const NAMES = ["Donald Stump", "Twiggy", "Burl", "Sprig", "Knotley", "Bramble", "Splinter", "Pip", "Bark Twain", "Acorn", "Timber", "Log Nessie"];
@@ -552,6 +575,13 @@ const SFX = {
   morning: { gap: 1000, p: () => notes([523, 659, 784, 1047], .12, { type: "triangle", vol: .13, dur: .25 }) },
   villager: { gap: 500, p: () => notes([659, 784, 988], .09, { type: "triangle", vol: .15 }) },
   death: { gap: 500, p: () => notes([440, 392, 330, 262], .18, { type: "triangle", vol: .15, dur: .25 }) },
+  fanfare: { gap: 3000, p: () => {
+    const m = [[392, 0, .18], [392, .2, .12], [392, .34, .12], [523, .5, .5], [466, 1.05, .18], [523, 1.25, .18], [659, 1.45, .9]];
+    for (const [f, d, l] of m) { tone(f, l, { type: "square", vol: .07, delay: d }); tone(f / 2, l, { type: "triangle", vol: .14, delay: d }); tone(f * 1.5, l, { type: "triangle", vol: .04, delay: d }); }
+    for (const d of [0, .5, 1.05, 1.45]) noise(.25, { freq: 180, q: .6, vol: .3, delay: d });
+    notes([1047, 1319, 1568, 2093], .07, { type: "triangle", vol: .06, delay: 2.4, dur: .3 });
+  } },
+  firework: { gap: 120, p: v => { noise(.5, { freq: 2500, q: .4, vol: .12 * v, slide: .3 }); tone(80, .2, { vol: .2 * v, slide: .5 }); } },
   goal: { gap: 400, p: () => notes([784, 1047], .1, { type: "triangle", vol: .15, dur: .2 }) },
   deny: { gap: 150, p: () => tone(180, .12, { type: "square", vol: .07, slide: .8 }) },
   click: { gap: 30, p: () => tone(1200, .03, { type: "triangle", vol: .07 }) },
@@ -612,6 +642,7 @@ function updateHud() {
   const t = `Day ${G.day} · ${clockLabel(G.hour)}`;
   if (t !== lastTime) { lastTime = t; $("time").textContent = t; const c = isNight() ? "#bfd1ff" : "#ffd34d"; $("sun").style.background = c; $("sun").style.boxShadow = `0 0 8px ${c}`; }
   $("pop").textContent = `Village: ${1 + G.villagers.length} HollowFolk`;
+  const bt = (G.milestone || 0) >= 100 ? `★ ${G.milestone}-Day Village` : ""; if ($("badge").textContent !== bt) { $("badge").textContent = bt; $("badge").hidden = !bt; }
   const n = G.pod.hp / G.pod.max;
   $("podbar").style.width = `${n * 100}%`;
   $("podbar").style.background = G.pod.hurtT > 0 && Math.sin(performance.now() / 80) > 0 ? "#ffffff" : lerpC(P.bad, "#a3dc62", n);
@@ -648,12 +679,14 @@ function tickClock(dt) {
 }
 function onDayStart() {
   G.day++; sfx("morning");
+  feedVillagers();
   for (const e of G.enemies) e.state = "flee";
   if (G.raidedTonight) { G.nights++; G.raidedTonight = false; toast(`Day ${G.day}. The village made it through the night!`); }
   G.raid = { warned: false, active: false, queue: [], timer: 0, dirs: [] };
   if (G.day === BDEF.cannon.unlock) setTimeout(() => toast("New defense unlocked: the Sap Cannon! Find it in Build."), 1500);
   if (isBossNight(G.day + 1)) setTimeout(() => toast("Giant tracks at the forest edge... Big Chomp the boss beaver arrives TOMORROW night.", true), 2500);
-  if (isBossNight(G.day)) setTimeout(() => toast("Big Chomp comes TONIGHT. He smashes defenses first, then goes for the pod!", true), 2500);
+  if (isBossNight(G.day) && G.day % 100 !== 0) setTimeout(() => toast("Big Chomp comes TONIGHT. He smashes defenses first, then goes for the pod!", true), 2500);
+  checkMilestone(1200);
 }
 const COMPASS = ["east", "south-east", "south", "south-west", "west", "north-west", "north", "north-east"];
 const compass = a => COMPASS[Math.round(((a % TAU) + TAU) % TAU / (TAU / 8)) % 8];
@@ -661,8 +694,10 @@ const compass = a => COMPASS[Math.round(((a % TAU) + TAU) % TAU / (TAU / 8)) % 8
 const waveFor = n => {
   const k = isBossNight(n) ? .7 : 1;
   return {
-    squirrel: Math.round((2 + n + Math.floor(n * n / 16)) * k),
-    beaver: n >= 2 ? Math.round(Math.max(1, Math.floor((n - 1) * .8)) * k) : 0,
+    squirrel: Math.round((2 + n + Math.floor(n * n / 40)) * k),
+    beaver: n >= 2 ? Math.round(Math.max(1, Math.floor((n - 1) * 1.1 + n * n / 60)) * k) : 0,
+    bruiser: n >= 12 ? Math.floor((n - 8) / 3) : 0,
+    raccoon: n >= 6 ? 1 + Math.floor((n - 6) / 4) : 0,
     hornet: n >= 2 ? Math.round(Math.ceil(n * .8) * k) : 0,
     mole: n >= 3 ? Math.ceil((n - 2) * .7) : 0,
     boss: isBossNight(n) ? 1 : 0,
@@ -670,20 +705,33 @@ const waveFor = n => {
 };
 const hpScale = day => 1 + .15 * (day - 1);
 const waveLabel = w => Object.entries(w).filter(([, n]) => n > 0).map(([t, n]) => `${t === "boss" ? "" : n + " "}${EDEF[t].name}${n > 1 ? "s" : ""}`).join(" and ");
+/** Bigger, richer villages attract more raiders: extra mobs on top of the night's wave. */
+function wealthBonus() {
+  const stash = G.inv.wood + G.inv.sap + G.inv.stone;
+  return Math.floor(G.buildings.length / 4 + G.villagers.length / 2 + Math.max(0, G.plots.length - 6) / 5 + Math.sqrt(stash) / 5);
+}
 function warnRaid() {
   const w = waveFor(G.day), dirs = [rand(0, TAU)];
+  const extra = G.day >= 3 ? wealthBonus() : 0;
+  if (extra > 0) {
+    const mix = [["raccoon", G.day >= 6 ? .3 : 0], ["beaver", .35], ["squirrel", .2], ["bruiser", G.day >= 12 ? .15 : 0], ["hornet", G.day >= 2 ? .1 : 0]];
+    const tot = mix.reduce((a, m) => a + m[1], 0);
+    for (let k = 0; k < extra; k++) { let r = Math.random() * tot; for (const [t, wt] of mix) { if ((r -= wt) <= 0) { w[t] = (w[t] || 0) + 1; break; } } }
+  }
   if (G.day >= 4) dirs.push(dirs[0] + Math.PI * rand(.6, 1.2));
   if (G.day >= 9) dirs.push(dirs[0] + Math.PI * rand(1.3, 1.7));
   let queue = [];
   for (const [type, n] of Object.entries(w)) if (type !== "boss") for (let k = 0; k < n; k++) queue.push(type);
   queue.sort(() => Math.random() - .5);
-  queue = queue.slice(0, 70);
   if (w.boss) queue.splice(Math.floor(queue.length * .35), 0, "boss");
   Object.assign(G.raid, { warned: true, active: false, queue, dirs, timer: 0 });
   sfx("warn");
   toast(`Tonight: ${waveLabel(w)} from the ${dirs.map(compass).join(" and ")}. Get ready!`, true);
+  if (extra >= 3) setTimeout(() => toast(`Your thriving village drew ${extra} extra raiders tonight.`, true), 1200);
+  if (w.raccoon && !G.seenRaccoon) { G.seenRaccoon = true; setTimeout(() => toast("Bandit Raccoons are fast and tough. They hop walls, rob the pod and run. Thorn Bushes and cannons slow them down."), 2600); }
   if (w.hornet && !G.seenHornet) { G.seenHornet = true; setTimeout(() => toast("Hornets fly over walls straight for the pod. Keep turrets close to it."), 1800); }
   if (w.boss) { cam.trauma = .6; }
+  if (w.bruiser && !G.seenBruiser) { G.seenBruiser = true; setTimeout(() => toast("Bruiser Beavers are here: twice the size, and they chew through walls fast."), 1800); }
   if (w.mole && !G.seenMole) { G.seenMole = true; setTimeout(() => toast("Moles tunnel under walls to eat crops. Turrets can only hit them when they pop up."), 1800); }
 }
 function onNightStart() {
@@ -695,9 +743,13 @@ function tickRaid(dt) {
   const r = G.raid;
   if (!r.active || !r.queue.length) return;
   r.timer -= dt; if (r.timer > 0) return;
+  if (G.enemies.length >= 60) { r.timer = 1; return; } // keep the screen readable; the rest wait their turn
   // from night 3 wildlife comes in packs
-  const pack = G.day < 3 ? 1 : 2 + Math.floor(Math.random() * Math.min(5, 1 + Math.floor(G.day / 4)));
-  r.timer = pack > 1 ? rand(4, 6.5) : rand(2, 4);
+  // packs grow so the whole raid arrives before dawn, however big it gets
+  const secsLeft = (G.hour >= 20 ? 28.5 - G.hour : 4.5 - G.hour) * DAY_LEN / 24;
+  const need = Math.ceil(r.queue.length / Math.max(1, Math.floor(secsLeft / 4.5)));
+  const pack = G.day < 3 ? 1 : Math.max(need, 2 + Math.floor(Math.random() * Math.min(5, 1 + Math.floor(G.day / 4))));
+  r.timer = pack > 1 ? rand(3.5, 5.5) : rand(2, 4);
   const a0 = r.dirs[Math.floor(Math.random() * r.dirs.length)];
   for (let k = 0; k < pack && r.queue.length; k++) {
     const type = r.queue.shift(), a = a0 + rand(-.3, .3);
@@ -1008,10 +1060,18 @@ function handleTap(t) {
 }
 
 // ================================================================== building
+/** Garden Plots get pricier the bigger the farm (the 6 starting plots are free). */
+function costOf(type) {
+  if (type !== "plot") return BDEF[type].cost;
+  const n = Math.max(0, G.plots.length - 6);
+  const c = { wood: Math.round(2 * Math.pow(1.08, n)) };
+  if (n >= 10) c.stone = Math.floor(n / 5);
+  return c;
+}
 function trayHtml() {
   const cards = TOOLS.map(k => {
     const d = BDEF[k], locked = d.unlock && G.day < d.unlock;
-    const cost = locked ? `<span class="no">Unlocks on day ${d.unlock}</span>` : Object.entries(d.cost).map(([r, v]) => `<span class="${G.inv[r] >= v ? "ok" : "no"}">${v} ${resName(r)}</span>`).join("") || `<span class="ok">Free</span>`;
+    const cost = locked ? `<span class="no">Unlocks on day ${d.unlock}</span>` : Object.entries(costOf(k)).map(([r, v]) => `<span class="${G.inv[r] >= v ? "ok" : "no"}">${v} ${resName(r)}</span>`).join("") || `<span class="ok">Free</span>`;
     return `<button type="button" class="card" data-b="${k}"${locked ? ' disabled style="opacity:.55"' : ""}><div class="nm">${esc(d.name)}</div><div class="cs">${cost}</div><div class="ds">${esc(d.desc)}</div></button>`;
   }).join("");
   return `<div class="head"><h2>Build</h2></div><div class="cards">${cards}</div>`;
@@ -1036,11 +1096,11 @@ function canPlace(type, ci, cj) {
     if (!inGrid(i, j) || Math.hypot(cx(i), cy(j)) > RAD - .8) return "Too close to the forest";
     if (occ[idx(i, j)]) return "Something's in the way";
   }
-  return canAfford(BDEF[type].cost) ? "" : `Need ${missing(BDEF[type].cost)}`;
+  return canAfford(costOf(type)) ? "" : `Need ${missing(costOf(type))}`;
 }
 function placingHtml() {
   const def = BDEF[G.sel], [ci, cj] = G.ghost, why = canPlace(G.sel, ci, cj);
-  const cost = Object.entries(def.cost).map(([k, v]) => `<span class="${G.inv[k] >= v ? "ok" : "no"}">${v} ${resName(k)}</span>`).join("");
+  const cost = Object.entries(costOf(G.sel)).map(([k, v]) => `<span class="${G.inv[k] >= v ? "ok" : "no"}">${v} ${resName(k)}</span>`).join("");
   const how = isTouch() ? "Tap the ground to move it" : "Click to place · Esc when done";
   const msg = why ? `<span class="no">${esc(why)}</span>` : how;
   return `<div><div class="pn">${esc(def.name)}</div><div class="cs">${cost}</div><div class="why">${msg}</div></div>
@@ -1052,7 +1112,7 @@ function tryPlace() {
   sfx("place");
   if (G.sel === "clear") { removeThing(thingAt(ci, cj)); return; }
   const def = BDEF[G.sel];
-  spend(def.cost, ci - GO + def.size[0] / 2, cj - GO);
+  spend(costOf(G.sel), ci - GO + def.size[0] / 2, cj - GO);
   if (G.sel === "plot") { const p = makePlot(ci, cj); G.plots.push(p); burst(p.x, p.y, P.soil, 10, 2.4, .13); }
   else G.buildings.push(makeBuilding(G.sel, ci, cj, false));
   G.dirty = true;
@@ -1209,13 +1269,30 @@ function hurt(e, dmg, slowK = 1, slowT = 0, quiet) {
   if (e.hp > 0) { if (!quiet) sfx("hit", e.x, e.y); return; }
   sfx(e.type === "boss" ? "wreck" : "defeat", e.x, e.y);
   burst(e.x, e.y - .4, P.dust, 14, 3, .18, .7);
-  if (e.carry) addRes(e.carryType, e.carry, e.x, e.y - .4);
+  G.kills = (G.kills || 0) + 1; if (e.type === "boss") G.bossKills = (G.bossKills || 0) + 1;
+  if (e.loot) { for (const [k, v] of Object.entries(e.loot)) addRes(k, v, e.x, e.y - .4); }
+  else if (e.carry) addRes(e.carryType, e.carry, e.x, e.y - .4);
   const rw = EDEF[e.type].reward; if (rw) for (const [k, v] of Object.entries(rw)) addRes(k, v, e.x, e.y - .8);
   floatText(e.x, e.y - 1.1, `${EDEF[e.type].name} chased off!`, P.leafL, .85);
   G.enemies.splice(G.enemies.indexOf(e), 1); raidOverCheck();
 }
+/** Losses are summed and reported once, so a big raid doesn't flood the screen. */
+function reportLoss(kind, loot) {
+  const L = G.loss || (G.loss = { squirrel: { n: 0 }, raccoon: { n: 0 } }), b = L[kind];
+  b.n++; for (const [k, v] of Object.entries(loot)) b[k] = (b[k] || 0) + v;
+  if (L.pending) return;
+  L.pending = setTimeout(() => {
+    for (const [kk, label] of [["squirrel", ["A squirrel", "Squirrels"]], ["raccoon", ["A Bandit Raccoon", "Bandit Raccoons"]]]) {
+      const x = L[kk]; if (!x.n) continue;
+      const what = RES.filter(r => x[r.id]).map(r => `${x[r.id]} ${r.name}`).join(", ");
+      toast(`${x.n > 1 ? `${x.n} ${label[1]}` : label[0]} got away with ${what}!`, true);
+    }
+    G.loss = null;
+  }, 1800);
+}
 function despawn(e) {
-  if (e.carry) toast(`A squirrel ran off with ${e.carry} ${resName(e.carryType)}.`, true);
+  if (e.loot) reportLoss("raccoon", e.loot);
+  else if (e.carry) reportLoss("squirrel", { [e.carryType]: e.carry });
   G.enemies.splice(G.enemies.indexOf(e), 1); raidOverCheck();
 }
 function tickEnemies(dt) {
@@ -1226,7 +1303,7 @@ function tickEnemies(dt) {
     if (e.stun > 0) { e.stun -= dt; e.x += e.kx * dt; e.y += e.ky * dt; e.kx *= Math.max(0, 1 - dt * 6); e.ky *= Math.max(0, 1 - dt * 6); e.actT = 0; continue; }
     if (e.slowT > 0) { e.slowT -= dt; if (e.slowT <= 0) e.slowK = 1; }
     if (def.boss) { tickBoss(e, def, dt); continue; }
-    if (def.fly || def.dig) { tickSpecial(e, def, dt); continue; }
+    if (def.fly || def.dig || def.thief) { tickSpecial(e, def, dt); continue; }
     const field = fields[e.state === "flee" ? "exit" : def.field];
     const [i, j] = cellAt(e.x, e.y - .1);
     let vx = 0, vy = 0, acting = false;
@@ -1270,6 +1347,20 @@ function tickSpecial(e, def, dt) {
     const m = Math.hypot(e.x, e.y) || 1;
     if (m > RAD + 4) { despawn(e); return; }
     tx = e.x / m * (RAD + 6); ty = e.y / m * (RAD + 6);
+  } else if (def.thief) {
+    // a raccoon hops every wall, grabs a share of the stockpile from the pod, then bolts
+    tx = G.pod.x + (e.x < G.pod.x ? -1.6 : 1.6); ty = G.pod.y + .3;
+    if (dist(e.x, e.y, tx, ty) < .3) {
+      e.actT += dt; shake(e.sh, .3);
+      if (e.actT > .9) {
+        e.loot = {}; let tot = 0;
+        for (const r of RES) { const take = Math.min(G.inv[r.id], Math.max(3, Math.floor(G.inv[r.id] * .06))); if (take > 0) { G.inv[r.id] -= take; e.loot[r.id] = take; tot += take; pulse(r.id); } }
+        e.carry = tot; e.carryType = "sap";
+        floatText(e.x, e.y - .9, tot ? `-${tot} stolen!` : "*rummage*", P.bad, .95); sfx("steal", e.x, e.y);
+        e.state = "flee"; e.actT = 0;
+      }
+      return;
+    }
   } else if (def.fly) {
     tx = G.pod.x + Math.cos(e.id) * .9; ty = G.pod.y - .2;
     if (dist(e.x, e.y, tx, ty) < .35) { sfx("buzz", e.x, e.y); e.actT += dt; damagePod(def.dps * dt); shake(e.sh, .3); e.walk += dt * 20; return; }
@@ -1327,15 +1418,16 @@ function tickBoss(e, def, dt) {
   e.stomp = (e.stomp || 0) - dt;
   if (e.stomp <= 0) { e.stomp = .55; sfx("stomp", e.x, e.y); burst(e.x, e.y, P.dust, 4, 1.6, .16, .5); cam.trauma = Math.min(.35, cam.trauma + .12); }
 }
+const chewMul = e => (e.type === "beaver" || e.type === "bruiser") ? 1 + .06 * (G.day - 1) : 1;
 function act(e, o, dt) {
   const def = EDEF[e.type];
   e.actT += dt; shake(e.sh, .25);
   if (o.k === "pod") {
     if (e.type === "squirrel") { if (e.actT > 2) steal(e); return; }
-    damagePod(def.dps * dt); return;
+    damagePod(def.dps * chewMul(e) * dt); return;
   }
   const b = o.ref;
-  b.hp -= def.dps * dt;
+  b.hp -= def.dps * chewMul(e) * dt;
   if (Math.random() < dt * 3) { burst(e.x + e.face * .3, e.y - .3, P.woodL, 2, 1.5, .08, .4); sfx("chomp", e.x, e.y); }
   shake(b.sh, .25);
   if (b.hp <= 0) destroyBuilding(b, `A ${def.name.toLowerCase()} wrecked a ${b.def.name}!`);
@@ -1373,9 +1465,20 @@ function killVillager(v, why) {
   burst(v.x, v.y - .4, P.woodL, 14, 2.5, .14, .7); sfx("death");
   toast(`${why} ${v.name} didn't make it...`, true);
 }
+/** Every morning each villager eats 2 Sap. If there isn't enough, the hungry ones leave. */
+function feedVillagers() {
+  const n = G.villagers.length; if (!n) return;
+  const need = n * 2;
+  if (G.inv.sap >= need) { G.inv.sap -= need; pulse("sap"); setTimeout(() => toast(`Your ${n} villager${n > 1 ? "s" : ""} ate ${need} Sap for breakfast.`), 900); return; }
+  const fed = Math.floor(G.inv.sap / 2), leaving = n - fed;
+  G.inv.sap -= fed * 2; pulse("sap");
+  const gone = G.villagers.slice().sort(() => Math.random() - .5).slice(0, leaving);
+  for (const v of gone) { G.villagers.splice(G.villagers.indexOf(v), 1); burst(v.x, v.y - .4, P.dust, 8, 2, .12); }
+  setTimeout(() => toast(`Not enough Sap for breakfast. ${leaving} hungry villager${leaving > 1 ? "s" : ""} left the village.`, true), 900);
+}
 function tickArrival(dt) {
   const hut = G.buildings.find(b => b.type === "hut" && b.done && !G.villagers.some(v => v.home === b.id));
-  if (!hut || restTime()) { G.arrivalT = null; return; }
+  if (!hut || restTime() || G.inv.sap < 2 * (G.villagers.length + 1)) { G.arrivalT = null; return; }
   if (G.arrivalT === null) G.arrivalT = 5;
   if ((G.arrivalT -= dt) > 0) return;
   G.arrivalT = null;
@@ -1387,7 +1490,7 @@ function tickArrival(dt) {
   const v = spawnVillager(name, rand(-2, 2), RAD - .3, kind, wood, G.nameIdx === 1 ? (kind === "stick" ? 1 : 0) : undefined, undefined, hut.id);
   G.villagers.push(v);
   floatText(v.x, v.y - 1, "hello?", P.cream, .9); sfx("villager");
-  toast(`${name} moved in! Villagers slowly harvest, replant and patch things up. Protect their huts!`);
+  toast(`${name} moved in! Villagers farm and patch things up, and each eats 2 Sap every morning.`);
 }
 const step = (x, y, reach, dur, act, valid = () => true) => ({ x, y, reach, dur, act, valid });
 function planVillager(v) {
@@ -1453,6 +1556,7 @@ const OBJECTIVES = [
 ];
 function objectiveText() {
   if (mode !== "play") return "";
+  if ((G.milestone || 0) >= 100) return `<em>★</em>Legendary village! ${G.milestone} days survived. Can you reach ${G.milestone + 100}?`;
   if (G.obj >= OBJECTIVES.length) return `<em>★</em>Keep growing your village. How many nights can it last?`;
   return `<em>${G.obj + 1}/${OBJECTIVES.length}</em>${esc(OBJECTIVES[G.obj][0]())}`;
 }
@@ -1564,6 +1668,19 @@ function drawEnemy(e) {
     ctx.beginPath(); ctx.moveTo(-.36, -.02); ctx.lineTo(-.5, .03); ctx.lineTo(-.35, .06); ctx.fillStyle = "#2a1a08"; ctx.fill();
     E(-.17, .02, .21, .14, "#ffcc22"); R(-.24, .02, .05, .25, "#2a1a08", 0, false); R(-.12, .02, .05, .27, "#2a1a08", 0, false);
     E(.06, -.01, .11, .1, "#3a2a10"); E(.19, -.03, .1, .09, "#ffcc22"); E(.23, -.05, .04, .045, P.black, 0, false);
+  } else if (e.type === "raccoon") {
+    const now = performance.now() / 1000;
+    shadow(0, -.02, .55, .14); applyShake(e.sh); ctx.translate(0, -Math.abs(Math.sin(e.hop)) * .12); ctx.scale(e.face * 1.25, 1.25);
+    ctx.save(); ctx.translate(-.32, -.28); ctx.rotate((-25 + Math.sin(now * 10 + e.id) * 10) * D);
+    for (let k = 0; k < 4; k++) E(-.12 - k * .1, -.05 - k * .04, .1, .085, k % 2 ? "#2e2a2c" : "#9a9498", 0, k === 0);
+    ctx.restore();
+    E(0, -.3, .36, .24, "#8d878b"); E(.08, -.24, .16, .12, "#c9c3c6", 0, false);
+    E(-.18, -.1, .08, .1, "#2e2a2c"); E(.16, -.08, .08, .1, "#2e2a2c");
+    E(.34, -.5, .2, .18, "#8d878b"); E(.24, -.66, .05, .07, "#2e2a2c"); E(.4, -.66, .05, .07, "#2e2a2c");
+    R(.36, -.52, .3, .09, "#2e2a2c", 0, false, 1, .04); // bandit mask
+    E(.32, -.52, .025, .025, P.white, 0, false); E(.42, -.52, .025, .025, P.white, 0, false);
+    E(.52, -.45, .035, .03, P.black, 0, false);
+    if (e.carry) { E(-.08, -.6, .2, .17, "#c9a36a"); R(-.08, -.74, .07, .06, "#8a6a3a", 0, false); E(-.08, -.62, .05, .05, P.sap, 0, false); }
   } else if (e.type === "mole") {
     if (e.under) { E(0, -.06, .36, .16, P.soil); E(-.08, -.13, .16, .08, mix(P.soil, .15), 0, false); E(.12, -.05, .06, .04, P.soilWet, 0, false); }
     else {
@@ -1573,9 +1690,9 @@ function drawEnemy(e) {
       E(.3, -.32, .08, .06, "#ff9fb0"); E(.17, -.42, .022, .022, P.black, 0, false);
     }
   } else {
-    const big = e.type === "boss", sc = big ? 2.7 : 1.25;
+    const big = e.type === "boss", sc = big ? 2.7 : e.type === "bruiser" ? 1.85 : 1.25;
     shadow(0, -.02, big ? 1.6 : .7, big ? .38 : .17); applyShake(e.sh); ctx.translate(0, big ? -Math.abs(Math.sin(e.walk * .5)) * .06 : -Math.abs(Math.sin(e.hop)) * .04); ctx.scale(e.face * sc, sc);
-    const fur = big ? "#6e4426" : P.beaver, dk = mix(fur, -.25);
+    const fur = big ? "#6e4426" : e.type === "bruiser" ? "#5c3a22" : P.beaver, dk = mix(fur, -.25);
     ctx.save(); ctx.translate(-.38, -.12); ctx.rotate(Math.sin(e.walk) * 6 * D); E(-.16, 0, .3, .1, "#4a3020", -8); ctx.restore();
     E(-.05, -.12, .14, .08, dk); E(.2, -.1, .12, .07, dk); E(0, -.34, .42, .3, fur);
     E(.38, -.44, .22, .2, fur); E(.3, -.62, .06, .06, dk); E(.46, -.5, .04, .045, P.black, 0, false); E(.58, -.44, .05, .04, P.black, 0, false);
@@ -1657,6 +1774,12 @@ function drawPod() {
   for (const [y, w] of [[-.32, 1.45], [.05, 1.6], [.42, 1.35]]) E(0, y, w, .04, P.shellD, 0, false, .4);
   E(-.8, .3, .225, .15, "#664d26", 0, false, .5); R(-.4, .15, .5, .04, "#59401f", -30, false, .8);
   if (pod.hp / pod.max < .6) { R(.5, .2, .6, .035, "#59401f", 20, false, .8); R(-1.1, -.2, .45, .035, "#59401f", -40, false, .8); }
+  if ((G.milestone || 0) >= 100) {
+    ctx.save(); ctx.rotate(-10 * D); RB(-.9, -.55, .05, 1.3, P.woodD, 0, true);
+    ctx.beginPath(); ctx.moveTo(-.88, -1.85); ctx.lineTo(-.3, -1.68 + Math.sin(performance.now() / 300) * .04); ctx.lineTo(-.88, -1.5); ctx.closePath(); ctx.fillStyle = "#ffd34d"; ctx.fill(); ctx.strokeStyle = "#a8780e"; ctx.lineWidth = LW; ctx.stroke();
+    ctx.fillStyle = "#7a4a0c"; ctx.font = "800 .15px Grandstander, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(String(G.milestone), -.66, -1.67);
+    ctx.restore();
+  }
   if (pod.open) E(.62, -.62, .5, .17, P.sap, 0, false);
   ctx.save(); ctx.translate(.1, -.62); ctx.rotate(-pod.hatch * 75 * D); E(.52, 0, .55, .21, mix(P.shell, .2)); ctx.restore();
   ctx.restore();
@@ -1740,7 +1863,7 @@ function render() {
     }
   }
   for (const b of G.buildings) if (b.done) hpBar(b.x, b.y - b.def.tall - .25, b.hp / b.max, Math.min(.9, b.def.size[0] * .7));
-  for (const e of G.enemies) if (!e.under) { if (e.type === "boss") hpBar(e.x, e.y - 2.6, e.hp / e.max, 1.8); else hpBar(e.x, e.y - (EDEF[e.type].fly ? 1.55 : 1.15), e.hp / e.max, .6); }
+  for (const e of G.enemies) if (!e.under) { if (e.type === "boss") hpBar(e.x, e.y - 2.6, e.hp / e.max, 1.8); else hpBar(e.x, e.y - (EDEF[e.type].fly ? 1.55 : e.type === "bruiser" ? 1.7 : 1.15), e.hp / e.max, e.type === "bruiser" ? .9 : .6); }
 
   const dark = darkness(), dusk = clamp(1 - Math.abs(G.hour - 18.5) / 1.6, 0, 1) * (1 - dark);
   ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -1813,6 +1936,7 @@ function frame(now) {
   try {
     if (mode === "title") { cam.tx = Math.sin(now / 4000) * 1.2; cam.ty = .5; }
     else if (mode === "intro") { if (introGen && introGen.next().done) introGen = null; }
+    else if (mode === "play" && partying) { if (down("cancel")) endParty(); tickParty(dt); }
     else if (mode === "play" && paused) { if (down("cancel")) pauseBack(); }
     else if (mode === "play") {
       if (down("cancel")) { if (G.sel) G.sel = null; else if (G.tray) G.tray = false; else openPause("main"); }
@@ -1872,7 +1996,7 @@ function startPlay() {
 // ================================================================== saves & menu
 function serialize() {
   return {
-    v: 3, seed: G.seed, savedAt: Date.now(), inv: { ...G.inv }, day: G.day, hour: G.hour, podHp: G.pod.hp,
+    v: 3, seed: G.seed, savedAt: Date.now(), kills: G.kills || 0, bossKills: G.bossKills || 0, milestone: G.milestone || 0, inv: { ...G.inv }, day: G.day, hour: G.hour, podHp: G.pod.hp,
     obj: G.obj, planted: G.planted, harvested: G.harvested, nights: G.nights, nameIdx: G.nameIdx, kind: G.player.kind, wood: G.player.wood, px: G.player.x, py: G.player.y,
     buildings: G.buildings.map(b => ({ type: b.type, ci: b.ci, cj: b.cj, hp: b.hp, done: b.done })),
     plots: G.plots.map(p => ({ ci: p.ci, cj: p.cj, state: p.state, stage: p.stage, timer: p.timer })),
@@ -1884,6 +2008,7 @@ function serialize() {
 function restore(d) {
   G = newState(); G.seed = d.seed || 1; buildWorld();
   Object.assign(G.inv, d.inv);
+  Object.assign(G, { kills: d.kills || 0, bossKills: d.bossKills || 0, milestone: d.milestone || 0 });
   Object.assign(G, { day: d.day, hour: d.hour, obj: d.obj || 0, planted: d.planted || 0, harvested: d.harvested || 0, nights: d.nights || 0, nameIdx: d.nameIdx || 0 });
   G.wasNight = isNight();
   if (G.hour >= 17.5 || G.hour < 6) G.raid.warned = true;
@@ -1913,7 +2038,7 @@ function saveSlot(id) {
 function loadSlot(id) {
   const d = readSlot(id);
   if (!d) { toast("That slot is empty."); return; }
-  closePause(); restore(d); G.slot = id === "auto" ? null : id; startPlay();
+  closePause(); restore(d); G.slot = id === "auto" ? null : id; startPlay(); checkMilestone(900);
   toast(id === "auto" ? "Autosave loaded." : `Slot ${id} loaded.`);
 }
 function slotButton(id, act) {
@@ -1964,6 +2089,85 @@ setInterval(() => { if (mode === "play" && !paused) writeSlot("auto"); }, 30000)
 addEventListener("pagehide", () => { if (mode === "play") writeSlot("auto"); });
 document.addEventListener("visibilitychange", () => { if (document.hidden && mode === "play") { writeSlot("auto"); if (!paused) openPause("main"); } });
 
+// ================================================================== day 100 celebration
+let partying = false, partyT = 0, fwT = 0, confetti = [], confettiOn = false;
+const cfCanvas = $("confetti"), cf = cfCanvas.getContext("2d");
+function checkMilestone(delay) {
+  const m = Math.floor(G.day / 100) * 100;
+  if (m >= 100 && m > (G.milestone || 0)) { G.milestone = m; setTimeout(() => { if (mode === "play") celebrate(m); }, delay); }
+}
+function celebrate(m) {
+  if (paused) closePause();
+  partying = true; partyT = 0; fwT = 0; G.sel = null; G.tray = false;
+  const who = G.player.kind === "stump" ? "Donald Stump" : "Stickolas Cage", n = G.villagers.length;
+  const first = m === 100;
+  const stats = [
+    [G.day, "days survived"],
+    [1 + n, "HollowFolk in the village"],
+    [G.buildings.length, "buildings standing"],
+    [G.harvested || 0, "Sap Sprouts harvested"],
+  ];
+  if (G.kills) stats.push([G.kills, "raiders chased off"]);
+  if (G.bossKills) stats.push([G.bossKills, `Big Chomp${G.bossKills > 1 ? "s" : ""} beaten`]);
+  $("partyCard").innerHTML = `<div class="eyebrow">A Stick Together milestone</div>
+    <div class="big">${m}<small>days survived</small></div>
+    <p>${first ? `You made it! ${esc(who)}${n ? ` and ${n} HollowFolk` : ""} survived 100 nights in the giant forest. Squirrels, hornets, raccoons, even Big Chomp couldn't stop you.` : `${m} nights and still standing. ${esc(who)}'s village is the stuff of HollowFolk legend.`}</p>
+    <div class="stats">${stats.map(([v, l]) => `<div class="stat"><b>${Number(v).toLocaleString()}</b><span>${l}</span></div>`).join("")}</div>
+    ${isBossNight(G.day) ? `<div class="warn">Heads up: Big Chomp is coming tonight to crash the party.</div>` : ""}
+    <div class="row"><button class="wood" type="button" id="partyGo">Keep playing</button><button class="wood alt" type="button" id="partySave">Save this moment</button></div>`;
+  $("party").hidden = false;
+  $("partyGo").addEventListener("click", endParty);
+  $("partySave").addEventListener("click", () => { endParty(); openPause("save"); });
+  sfx("fanfare"); cam.trauma = .5;
+  startConfetti();
+  G.inv.sap += m; G.inv.wood += m / 2; G.inv.stone += m / 4; // a party gift
+  setTimeout(() => toast(`Party gift: +${m} Sap, +${m / 2} Wood, +${m / 4} Stone!`), 400);
+}
+function endParty() {
+  partying = false; $("party").hidden = true;
+  toast("Here's to the next hundred!");
+}
+function tickParty(dt) {
+  partyT += dt; fwT -= dt;
+  // everyone dances
+  for (const f of [G.player, ...G.villagers]) {
+    f.z = Math.abs(Math.sin(partyT * 6 + (f.id || 0))) * .35;
+    if (Math.random() < dt * 1.5) f.swingT = 0;
+    if (Math.random() < dt * .4) f.face *= -1;
+    animateFolk(f, dt, 0, 0);
+  }
+  if (fwT <= 0 && partyT < 40) {
+    fwT = rand(.35, .9);
+    const x = cam.x + rand(-6, 6), y = cam.y + rand(-5, 0), c = ["#ffd34d", "#ff8fb8", "#8fe3ff", "#a3dc62", "#ffffff", "#ff9a3c"][Math.floor(rand(0, 6))];
+    burst(x, y, c, 36, 6, .16, 1.3, 3); burst(x, y, "#ffffff", 8, 2, .1, .6, 0);
+    sfx("firework", x, y);
+  }
+}
+function startConfetti() {
+  if (reduceMotion) return;
+  cfCanvas.width = innerWidth * DPR; cfCanvas.height = innerHeight * DPR; cfCanvas.hidden = false;
+  const cols = ["#ffd34d", "#a3dc62", "#6bb847", "#ff8fb8", "#e08a2a", "#fff3dc", "#8fe3ff"];
+  confetti = Array.from({ length: 170 }, () => ({ x: rand(0, innerWidth), y: rand(-innerHeight, -10), vx: rand(-30, 30), vy: rand(60, 160), r: rand(0, TAU), vr: rand(-6, 6), w: rand(7, 13), h: rand(4, 8), c: cols[Math.floor(rand(0, cols.length))], leaf: Math.random() < .4 }));
+  if (confettiOn) return;
+  confettiOn = true;
+  let lastT = performance.now(), t0 = lastT;
+  (function step(now) {
+    const dt = Math.min(.05, (now - lastT) / 1000); lastT = now;
+    cf.setTransform(DPR, 0, 0, DPR, 0, 0); cf.clearRect(0, 0, innerWidth, innerHeight);
+    const live = now - t0 < 9000;
+    let any = false;
+    for (const p of confetti) {
+      p.vy = Math.min(p.vy + 40 * dt, 170); p.x += (p.vx + Math.sin(now / 400 + p.r) * 25) * dt; p.y += p.vy * dt; p.r += p.vr * dt;
+      if (p.y > innerHeight + 20 && live) { p.y = rand(-60, -10); p.x = rand(0, innerWidth); }
+      if (p.y < innerHeight + 20) any = true;
+      cf.save(); cf.translate(p.x, p.y); cf.rotate(p.r); cf.fillStyle = p.c;
+      if (p.leaf) { cf.beginPath(); cf.ellipse(0, 0, p.w * .7, p.h * .6, 0, 0, TAU); cf.fill(); } else { cf.scale(1, Math.cos(p.r * 2)); cf.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); }
+      cf.restore();
+    }
+    if (live || any) requestAnimationFrame(step); else { confettiOn = false; cfCanvas.hidden = true; }
+  })(t0);
+}
+
 // ================================================================== boot
 function resize() {
   DPR = Math.min(2, window.devicePixelRatio || 1);
@@ -1975,7 +2179,7 @@ addEventListener("resize", resize);
 function start(data) {
   resize();
   showTitle();
-  if (data && data.save) { restore(data.save); startPlay(); }
+  if (data && data.save) { restore(data.save); startPlay(); checkMilestone(900); }
   $("startBtn").addEventListener("click", () => { G = newState(); buildWorld(); parts = []; texts = []; $("title").hidden = true; mode = "intro"; introGen = intro(); });
   $("contBtn").addEventListener("click", () => openPause("load", "title"));
   const setChar = k => {
