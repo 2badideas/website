@@ -29,7 +29,7 @@
     <h2 id="woods-install-title">Take the woods with you.</h2>
     <p id="woods-install-message"></p>
     <p class="woods-install-note" id="woods-offline-status"></p>
-    <p class="woods-install-note">Runs are not saved. Closing or reloading the game starts a new run.</p>
+    <p class="woods-install-note">XP, unlocks, best wave, and loadout save on this device. Closing or reloading starts a new run.</p>
     <button class="woods-install-button" id="woods-install-confirm" hidden>Install game</button>`;
   document.body.append(dialog);
   const confirm = dialog.querySelector('#woods-install-confirm');
