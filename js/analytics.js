@@ -99,7 +99,7 @@
   </style>
   <section role="region" aria-labelledby="heading" hidden>
     <h2 id="heading">Analytics choices</h2>
-    <div class="message"><p>Allow Umami to measure visits, referrals and game starts? It uses no analytics cookies. <a href="/privacy.html">Privacy policy</a></p><p id="status" role="status" hidden></p></div>
+    <div class="message"><p>Allow us to measure visits, referrals, and game starts? We do not use cookies. <a href="/privacy.html">Privacy policy</a></p><p id="status" role="status" hidden></p></div>
     <div class="actions"><button id="reject" type="button">Reject analytics</button><button id="accept" type="button">Accept analytics</button></div>
     <button id="close" type="button" aria-label="Close">×</button>
   </section>
