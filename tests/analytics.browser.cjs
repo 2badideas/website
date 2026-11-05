@@ -10,7 +10,7 @@ const routes = ['/', '/privacy.html', '/games/sticks-in-the-woods/', '/games/sti
 const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.jpg': 'image/jpeg', '.woff2': 'font/woff2', '.ttf': 'font/ttf', '.webmanifest': 'application/manifest+json' };
 (async () => {
   const tracker = process.env.UMAMI_SCRIPT_PATH ? fs.readFileSync(process.env.UMAMI_SCRIPT_PATH, 'utf8') : await (await fetch('https://cloud.umami.is/script.js')).text();
-  const browser = await chromium.launch({ channel: 'chrome', headless: true });
+  const browser = await chromium.launch({ channel: process.env.PLAYWRIGHT_CHANNEL || 'chrome', headless: true });
   let context;
   async function setup(options = {}, state = null, signal = null) {
     await context?.close();
@@ -26,7 +26,7 @@ const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css
       if (url.origin === origin || url.origin === 'https://preview.example') {
         const name = url.pathname.endsWith('/') ? url.pathname + 'index.html' : url.pathname;
         const file = path.join(site, name);
-        if (!file.startsWith(site + '/') || !fs.existsSync(file)) return route.fulfill({ status: 404, body: 'missing' });
+        if (!file.startsWith(site + path.sep) || !fs.existsSync(file)) return route.fulfill({ status: 404, body: 'missing' });
         return route.fulfill({ contentType: mime[path.extname(file)] || 'application/octet-stream', body: fs.readFileSync(file) });
       }
       if (req.url() === 'https://cloud.umami.is/script.js') return route.fulfill({ contentType: 'text/javascript', body: tracker });
@@ -119,7 +119,7 @@ const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css
     ]) {
       const run = await setup({}, accepted()); await run.page.goto(origin + route); await settle(run.page);
       assert.equal(run.sends.length, 1, 'One pageview including Woods iframe');
-      if (start === 'woods') await run.page.frameLocator('iframe').locator('#startBtn').click();
+      if (start === 'woods') { await run.page.frameLocator('iframe').locator('#startBtn').click(); await settle(run.page); assert.equal(run.sends.filter(s => s.payload?.name === 'game-start').length, 0, 'Loadout selection is not a game start'); await run.page.frameLocator('iframe').locator('#beginRunBtn').click(); }
       if (start === 'deep') await run.page.locator('#start').click();
       if (start === 'sap') {
         await run.page.locator('#startBtn').click();

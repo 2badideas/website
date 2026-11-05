@@ -6,7 +6,7 @@ The title and pause menus offer **Install game**. The outer page handles native 
 
 The service worker precaches the wrapper, game, install UI, manifest and icons. After one successful online visit, either entry page can reload and play without the server. Only these local files are intercepted; other pages, third-party requests and non-GET requests are left alone. Cache cleanup touches only this game's cache prefix. Bump the `CACHE` version in `sw.js` when shipping changed assets, and update the expected version in the test. Reload after the update activates to use the new files.
 
-Runs remain in memory. Installation and offline caching do not save scores or resume a closed run. Clearing this site's browser data removes its cached files. No tracking or external dependencies were added.
+Runs remain in memory and restart after closing or reloading. The game saves available/lifetime XP, best wave cleared, unlocked abilities, and selected loadout under `sticks-in-the-woods.progress.v1` in localStorage. Saves occur after XP awards and loadout selections, at game over, on page exit, and on initial load. The loader validates saves, migrates the former grapple ability to Bark Wall, and leaves unreadable saves untouched. If storage fails, progress lasts only for the session and the loadout screen explains the failure. Close the game and clear this site's browser data to remove progression and cached files. Saved progression is never transmitted. The shared consent controller retains the owner-approved optional page-visit and game-start analytics from main; see `docs/umami-release.md`.
 
 ## Verification
 
@@ -31,3 +31,17 @@ rsvg-convert -w 180 -h 180 games/sticks-in-the-woods/assets/icon.svg -o games/st
 rsvg-convert -w 192 -h 192 games/sticks-in-the-woods/assets/icon.svg -o games/sticks-in-the-woods/assets/icon-192.png
 rsvg-convert -w 512 -h 512 games/sticks-in-the-woods/assets/icon.svg -o games/sticks-in-the-woods/assets/icon-512.png
 ```
+
+## Wildfire replacement review — November 5, 2026
+
+Replaces game.html with the supplied Wildfire file, retaining PWA metadata, title/pause installation controls, and main's consent-gated analytics. The actual run start sends the existing allowlisted event; opening the loadout menu does not. Cache advances from the deployed v2 to v3 and retains the shared local consent controller and response-draining installation fix.
+
+| Finding | Policy promise / evidence | Fix / release impact |
+| --- | --- | --- |
+| Progression persists on-device | game.html: SAVE_KEY, loadProgress, saveProgress, awardXP, chooseAbility; policy's device-storage section | Policy and install guide disclose XP, best wave, unlocks and loadout. Saves remain local. |
+| Optional analytics retained | game.html: startRun; js/analytics.js; policy's optional-analytics section | Consent browser suite passes rejection, acceptance, withdrawal, GPC/DNT, expiry, route/iframe and payload checks. Synthetic collection intercepted. |
+| Cached clients need the new game | sw.js v3; tests/analytics-offline.browser.cjs | Actual Edge worker upgrade v2→v3, isolated caches, retained disposable storage, cached consent controls and offline game start pass with no external requests. |
+
+Validation: inline game syntax, PWA script/worker syntax, existing PWA suite, consent browser suite, offline browser suite, and diff checks passed. The browser suites support Windows paths and PLAYWRIGHT_CHANNEL (default chrome; msedge used here). Earlier November 2 desktop and 390×844 touch-layout gameplay/save checks passed for movement, attack, abilities, pause/resume, installation guide, synthetic XP/unlock/loadout persistence, grapple migration, invalid-save preservation, and clearing progression. The earlier offline-readiness timeout is resolved by main's response-draining worker fix and is now covered by the passing browser upgrade/offline suite. Physical-device/native installation checks remain unperformed.
+
+Review status: ready for Jacob's review within this scope; production deployment remains unverified. No related Sticks issue was found in the initial review. Jacob reviews and merges PR #8. Previous source before this update: 10021e4 (main). Roll back through a new PR restoring the prior game and device-storage wording while retaining consent behavior; advance the cache version again and preserve device saves.
