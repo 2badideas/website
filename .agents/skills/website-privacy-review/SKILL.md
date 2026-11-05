@@ -12,7 +12,8 @@ Read root `AGENTS.md` and `privacy.html`. Review the actual release diff and rea
 - Identify automatic requests from scripts, stylesheets, fonts, images, media, embeds, preconnects, workers, and dynamically generated URLs. Inspect `fetch`, XHR, beacon, WebSocket, EventSource, form submission, tracking SDKs, and imports. Search results are leads, not a complete audit; inspect vendored dependencies when they can initiate requests.
 - Distinguish same-origin asset delivery, local-only game state, visitor-initiated external navigation, and transmitted player data. A same-origin analytics endpoint is still tracking. Hosting security logs are distinct from gameplay analytics.
 - Inventory cookies, local/session storage, IndexedDB, Cache Storage, service workers, and saved-file import/export. Record what persists, whether it leaves the device, and how it is removed. Check that the policy accurately covers each game.
-- Do not introduce remote analytics or error-reporting services as a way to validate privacy. Avoid real player data in fixtures, screenshots, reports, and logs.
+- The owner authorized consent-gated Umami Cloud page visits and allowlisted game-start events on November 4, 2026. Review `js/analytics.js` and the current policy together: no tracker request before acceptance, after rejection/withdrawal/expiry, with GPC/DNT, or offline. Verify query/hash removal, origin-only referrers, cross-tab changes, direct game routes, and no duplicate iframe pageviews. Do not expand collection beyond this scope.
+- Do not introduce other remote analytics or error-reporting services as a way to validate privacy. Use intercepted analytics requests in tests so synthetic data does not reach the production dashboard. Avoid real player data in fixtures, screenshots, reports, and logs.
 
 ## Verify in the browser
 

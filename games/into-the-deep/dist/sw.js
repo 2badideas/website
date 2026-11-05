@@ -1,5 +1,5 @@
-const CACHE = 'stick-together-shell-v23';
-const SHELL = ['./', './index.html', './style.css', './game.js', './pwa.js', './manifest.webmanifest', './assets/three.module.js', './assets/three.core.js', './assets/story.png', './assets/icon-180.png', './assets/icon-192.png', './assets/icon-512.png', './assets/icon-maskable-512.png', '../../../assets/fonts/satoshi/Satoshi-Variable.woff2', '../../../assets/fonts/inter/InterVariable.woff2'];
+const CACHE = 'stick-together-shell-v24';
+const SHELL = ['../../../js/analytics.js', './', './index.html', './style.css', './game.js', './pwa.js', './manifest.webmanifest', './assets/three.module.js', './assets/three.core.js', './assets/story.png', './assets/icon-180.png', './assets/icon-192.png', './assets/icon-512.png', './assets/icon-maskable-512.png', '../../../assets/fonts/satoshi/Satoshi-Variable.woff2', '../../../assets/fonts/inter/InterVariable.woff2'];
 const shellURLs = new Set(SHELL.map(path => new URL(path, self.registration.scope).href));
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
@@ -10,7 +10,8 @@ self.addEventListener('install', event => {
       const response = await fetch(url, {cache:'reload', credentials:'same-origin'});
       if (!response.ok || response.redirected) throw new Error('Game assets unavailable');
       if ((path === './' || path === './index.html') && !(await response.clone().text()).includes('id="viewport"')) throw new Error('Game sign-in required');
-      return [url.href, response];
+      // Drain each download so pending bodies cannot exhaust the worker's fetch slots.
+      return [url.href, new Response(await response.arrayBuffer(), {status: response.status, statusText: response.statusText, headers: response.headers})];
     }));
     await Promise.all(responses.map(([url,response]) => cache.put(url,response)));
     await self.skipWaiting();
