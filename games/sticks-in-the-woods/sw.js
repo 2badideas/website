@@ -1,6 +1,6 @@
 const CACHE_PREFIX = 'sticks-in-the-woods-shell-';
-const CACHE = CACHE_PREFIX + 'v1';
-const SHELL = ['./', './index.html', './game.html', './pwa.js', './pwa.css', './manifest.webmanifest', './assets/icon-180.png', './assets/icon-192.png', './assets/icon-512.png'];
+const CACHE = CACHE_PREFIX + 'v2';
+const SHELL = ['../../js/analytics.js', './', './index.html', './game.html', './pwa.js', './pwa.css', './manifest.webmanifest', './assets/icon-180.png', './assets/icon-192.png', './assets/icon-512.png'];
 const shellURLs = new Set(SHELL.map(path => new URL(path, self.registration.scope).href));
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
@@ -13,7 +13,8 @@ self.addEventListener('install', event => {
         const marker = path === './game.html' ? 'id="game"' : 'src="game.html"';
         if (!html.includes(marker)) throw new Error('Game page unavailable');
       }
-      return [url.href, response];
+      // Drain each download so pending bodies cannot exhaust the worker's fetch slots.
+      return [url.href, new Response(await response.arrayBuffer(), {status: response.status, statusText: response.statusText, headers: response.headers})];
     }));
     const cache = await caches.open(CACHE);
     await Promise.all(entries.map(([url, response]) => cache.put(url, response)));

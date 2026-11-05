@@ -17,7 +17,7 @@ async function serviceWorkerTests() {
     keys: async () => [...stores.keys()],
     delete: async name => stores.delete(name)
   };
-  const sandbox = {URL, Set, Promise, caches, self: {
+  const sandbox = {URL, Set, Promise, Response, caches, self: {
     registration: {scope: base}, location: {origin: new URL(base).origin},
     addEventListener: (name, fn) => events[name] = fn,
     skipWaiting: async () => {}, clients: {claim: async () => {}}
@@ -25,8 +25,9 @@ async function serviceWorkerTests() {
     if (offline) throw Error('offline');
     if (broken === 'redirect') return {ok: true, redirected: true};
     if (broken === 'html') return new Response('<html>Sign in</html>');
-    const file = new URL(url).pathname.slice(new URL(base).pathname.length) || 'index.html';
-    return new Response(fs.readFileSync(path.join(root, file)));
+    const file = new URL(url).pathname;
+    const siteRoot = path.resolve(root, '../..');
+    return new Response(fs.readFileSync(path.join(siteRoot, file.endsWith('/') ? file + 'index.html' : file)));
   }};
   vm.createContext(sandbox);
   vm.runInContext(fs.readFileSync(path.join(root, 'sw.js'), 'utf8'), sandbox);
@@ -41,7 +42,7 @@ async function serviceWorkerTests() {
   }
   broken = '';
   await dispatch('install');
-  assert.equal(stores.get('sticks-in-the-woods-shell-v1').size, 9);
+  assert.equal(stores.get('sticks-in-the-woods-shell-v2').size, 10);
   stores.set('sticks-in-the-woods-shell-old', new Map());
   stores.set('stick-together-shell-v14', new Map());
   await dispatch('activate');
