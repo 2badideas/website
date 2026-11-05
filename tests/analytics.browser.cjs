@@ -48,7 +48,7 @@ const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css
     for (const route of routes) {
       const run = await setup(); const { page } = run;
       await page.goto(origin + route); await settle(page);
-      await page.getByRole('button', { name: 'Reject analytics', exact: true }).click();
+      await page.getByRole('button', { name: 'Reject', exact: true }).click();
       await page.evaluate(() => window.siteAnalytics.gameStart('sap-and-survive'));
       await settle(page); assert.equal(remoteCount(run), 0, route);
       await page.reload(); await settle(page); assert.equal(remoteCount(run), 0, route + ' reload');
@@ -62,7 +62,7 @@ const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css
     assert(desktopHeight <= 110, 'Desktop notice should remain a compact strip');
     assert(await page.getByRole('button', { name: 'Analytics choices', exact: true }).isHidden());
     await page.screenshot({ path: '/tmp/website-analytics-desktop.png' });
-    await page.getByRole('button', { name: 'Accept analytics', exact: true }).click();
+    await page.getByRole('button', { name: 'Accept', exact: true }).click();
     await page.waitForFunction(() => Boolean(window.umami)); await settle(page);
     assert.equal(sends.length, 1); assert.equal(sends[0].type, 'event');
     assert.equal(sends[0].payload.website, '5ff42a68-829e-4902-9d3b-b4fc38c8f29c');
@@ -74,7 +74,7 @@ const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css
     const other = await context.newPage(); await other.goto(origin + '/privacy.html'); await settle(page);
     const before = sends.length;
     await other.getByRole('button', { name: 'Analytics choices', exact: true }).click();
-    await other.getByRole('button', { name: 'Reject analytics', exact: true }).click();
+    await other.getByRole('button', { name: 'Reject', exact: true }).click();
     await page.evaluate(() => window.siteAnalytics.gameStart('into-the-deep'));
     await settle(page); assert.equal(sends.length, before);
     await page.reload(); await settle(page); assert.equal(sends.length, before);
@@ -85,12 +85,12 @@ const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css
       const run = await setup({}, accepted(), signal);
       await run.page.goto(origin); await settle(run.page);
       await run.page.getByRole('button', { name: 'Analytics choices', exact: true }).click();
-      assert(await run.page.getByRole('button', { name: 'Accept analytics', exact: true }).isDisabled());
+      assert(await run.page.getByRole('button', { name: 'Accept', exact: true }).isDisabled());
       assert.equal(remoteCount(run), 0);
     }
     for (const state of [{ choice: 'accepted', expires: Date.now() - 1000 }, { choice: 'garbage', expires: Date.now() + 86400000 }]) {
       const run = await setup({}, state); await run.page.goto(origin); await settle(run.page);
-      assert(await run.page.getByRole('button', { name: 'Accept analytics', exact: true }).isVisible());
+      assert(await run.page.getByRole('button', { name: 'Accept', exact: true }).isVisible());
       assert.equal(remoteCount(run), 0);
     }
     const preview = await setup({}, accepted()); await preview.page.goto('https://preview.example/'); await settle(preview.page);
@@ -103,11 +103,11 @@ const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css
       Storage.prototype.setItem = () => { throw Error('storage blocked'); };
     });
     await blocked.page.goto(origin);
-    await blocked.page.getByRole('button', { name: 'Accept analytics', exact: true }).click(); await settle(blocked.page);
+    await blocked.page.getByRole('button', { name: 'Accept', exact: true }).click(); await settle(blocked.page);
     assert(blocked.sends.length <= 1, 'Storage-blocked analytics may fail closed');
     const blockedBefore = blocked.sends.length;
     await blocked.page.getByRole('button', { name: 'Analytics choices', exact: true }).click();
-    await blocked.page.getByRole('button', { name: 'Reject analytics', exact: true }).click();
+    await blocked.page.getByRole('button', { name: 'Reject', exact: true }).click();
     await blocked.page.evaluate(() => window.siteAnalytics.gameStart('into-the-deep')); await settle(blocked.page);
     assert.equal(blocked.sends.length, blockedBefore); assert.deepEqual(blocked.errors, []);
     console.log('PASS: Unavailable local storage supports a page-only choice and withdrawal.');
@@ -141,8 +141,9 @@ const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css
     assert(box.x >= 0 && box.right <= 390 && box.top >= 0 && box.bottom <= 844);
     assert(box.bottom - box.top <= 180, 'Mobile notice should use no more than 180px');
     await mobile.page.screenshot({ path: '/tmp/website-analytics-mobile.png' });
-    await mobile.page.getByRole('button', { name: 'Reject analytics', exact: true }).click();
+    await mobile.page.getByRole('button', { name: 'Reject', exact: true }).click();
     await mobile.page.getByRole('button', { name: 'Analytics choices', exact: true }).click();
+    assert(await mobile.page.getByRole('button', { name: 'Accept', exact: true }).evaluate(el => el.getRootNode().activeElement === el));
     await mobile.page.keyboard.press('Escape');
     assert(await mobile.page.getByRole('button', { name: 'Analytics choices', exact: true }).evaluate(el => el.getRootNode().activeElement === el));
     console.log('PASS: Compact desktop/mobile notice, hidden duplicate settings, and keyboard close/focus restoration.');

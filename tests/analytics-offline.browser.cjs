@@ -58,12 +58,12 @@ const root = path.resolve(__dirname, '..');
     await context.setOffline(true);
     for (const game of ['sticks-in-the-woods', 'into-the-deep/dist']) {
       await page.goto(origin + '/games/' + game + '/');
-      assert(await page.getByRole('button', { name: 'Reject analytics', exact: true }).isVisible());
-      await page.getByRole('button', { name: 'Reject analytics', exact: true }).click();
+      assert(await page.getByRole('button', { name: 'Reject', exact: true }).isVisible());
+      await page.getByRole('button', { name: 'Reject', exact: true }).click();
       if (game === 'sticks-in-the-woods') await page.frameLocator('iframe').locator('#startBtn').click();
       else await page.locator('#start').click();
       await page.getByRole('button', { name: 'Analytics choices', exact: true }).click();
-      await page.getByRole('button', { name: 'Accept analytics', exact: true }).click();
+      await page.getByRole('button', { name: 'Accept', exact: true }).click();
       assert.equal(await page.evaluate(() => localStorage.getItem('analytics-save-sentinel')), 'preserve-existing-data');
       // Make the next route show its initial banner while keeping game storage intact.
       await page.evaluate(() => localStorage.removeItem('2badideas-analytics-v1'));

@@ -88,6 +88,7 @@
     .actions { display: flex; flex-shrink: 0; gap: 8px; }
     button { pointer-events: auto; cursor: pointer; min-height: 44px; padding: 8px 12px;
       border: 1px solid #abc0ad; border-radius: 6px; background: #20372a; color: #fff; touch-action: manipulation; }
+    #accept { background: #c6e5b8; border-color: #c6e5b8; color: #101d18; font-weight: 700; }
     button:focus-visible, a:focus-visible { outline: 3px solid #f4cf7c; outline-offset: 3px; }
     #close { position: absolute; right: max(4px, env(safe-area-inset-right, 0px)); top: 4px; width: 44px; border: 0; background: transparent; font-size: 22px; }
     #settings { position: fixed; bottom: env(safe-area-inset-bottom, 0px); left: max(8px, env(safe-area-inset-left, 0px));
@@ -100,7 +101,7 @@
   <section role="region" aria-labelledby="heading" hidden>
     <h2 id="heading">Analytics choices</h2>
     <div class="message"><p>Allow us to measure visits, referrals, and game starts? We do not use cookies. <a href="/privacy.html">Privacy policy</a></p><p id="status" role="status" hidden></p></div>
-    <div class="actions"><button id="reject" type="button">Reject analytics</button><button id="accept" type="button">Accept analytics</button></div>
+    <div class="actions"><button id="accept" type="button">Accept</button><button id="reject" type="button">Reject</button></div>
     <button id="close" type="button" aria-label="Close">×</button>
   </section>
   <button id="settings" type="button" aria-expanded="false">Analytics choices</button>`;
@@ -125,7 +126,7 @@
     settings.focus();
     loadTracker();
   }
-  settings.onclick = () => { render(panel.hidden); if (!panel.hidden) reject.focus(); };
+  settings.onclick = () => { render(panel.hidden); if (!panel.hidden) (accept.disabled ? reject : accept).focus(); };
   accept.onclick = () => { if (!signal()) choose('accepted'); };
   reject.onclick = () => choose('rejected');
   root.getElementById('close').onclick = () => { render(false); settings.focus(); };
