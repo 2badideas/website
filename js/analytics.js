@@ -76,23 +76,32 @@
     :host { all: initial; position: fixed; z-index: 2147483647; inset: auto 0 0; pointer-events: none; }
     * { box-sizing: border-box; }
     [hidden] { display: none !important; }
-    section, button { font: 15px/1.5 system-ui, sans-serif; }
-    section { pointer-events: auto; position: fixed; bottom: calc(52px + env(safe-area-inset-bottom, 0px)); left: 12px; right: 12px;
-      max-width: 650px; max-height: 70dvh; overflow-y: auto; padding: 20px; border: 1px solid #abc0ad;
-      border-radius: 12px; background: #101d18; color: #f0ecec; box-shadow: 0 8px 35px #0008; touch-action: pan-y; }
-    h2 { margin: 0 0 8px; font-size: 19px; } p { margin: 0 0 14px; }
+    section, button { font: 14px/1.4 system-ui, sans-serif; }
+    section { pointer-events: auto; position: fixed; bottom: 0; left: 0; right: 0;
+      display: flex; align-items: center; justify-content: center; gap: 16px; max-height: 50dvh; overflow-y: auto;
+      padding: 10px max(56px, env(safe-area-inset-right, 0px)) calc(10px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+      border-top: 1px solid #718775; background: #101d18; color: #f0ecec; touch-action: pan-y; }
+    h2 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    p { margin: 0; } #status { margin-top: 4px; font-size: 12px; }
+    .message { max-width: 650px; }
     a { color: #d2f2b9; text-decoration: underline; }
-    .actions { display: flex; flex-wrap: wrap; gap: 10px; }
-    button { pointer-events: auto; cursor: pointer; min-height: 44px; padding: 8px 14px;
+    .actions { display: flex; flex-shrink: 0; gap: 8px; }
+    button { pointer-events: auto; cursor: pointer; min-height: 44px; padding: 8px 12px;
       border: 1px solid #abc0ad; border-radius: 6px; background: #20372a; color: #fff; touch-action: manipulation; }
     button:focus-visible, a:focus-visible { outline: 3px solid #f4cf7c; outline-offset: 3px; }
-    #settings { position: fixed; bottom: calc(6px + env(safe-area-inset-bottom, 0px)); left: max(12px, env(safe-area-inset-left, 0px)); font-size: 12px; }
+    #close { position: absolute; right: max(4px, env(safe-area-inset-right, 0px)); top: 4px; width: 44px; border: 0; background: transparent; font-size: 22px; }
+    #settings { position: fixed; bottom: env(safe-area-inset-bottom, 0px); left: max(8px, env(safe-area-inset-left, 0px));
+      font-size: 11px; border: 0; background: #101d18; text-decoration: underline; }
+    @media (max-width: 760px) {
+      section { flex-direction: column; align-items: flex-start; gap: 8px; padding-left: max(12px, env(safe-area-inset-left, 0px)); }
+      .actions { flex-wrap: wrap; }
+    }
   </style>
   <section role="region" aria-labelledby="heading" hidden>
     <h2 id="heading">Analytics choices</h2>
-    <p>With your permission, we use cookieless Umami analytics to count visits, referral sources, and game starts. Your game saves and scores stay on your device. We store your choice here for 180 days. <a href="/privacy.html">Privacy policy</a></p>
-    <p id="status" role="status"></p>
-    <div class="actions"><button id="reject" type="button">Reject analytics</button><button id="accept" type="button">Accept analytics</button><button id="close" type="button">Close</button></div>
+    <div class="message"><p>Allow Umami to measure visits, referrals and game starts? It uses no analytics cookies. <a href="/privacy.html">Privacy policy</a></p><p id="status" role="status" hidden></p></div>
+    <div class="actions"><button id="reject" type="button">Reject analytics</button><button id="accept" type="button">Accept analytics</button></div>
+    <button id="close" type="button" aria-label="Close">×</button>
   </section>
   <button id="settings" type="button" aria-expanded="false">Analytics choices</button>`;
   const panel = root.querySelector('section');
@@ -101,8 +110,10 @@
   const reject = root.getElementById('reject');
   function render(open) {
     panel.hidden = !open;
+    settings.hidden = open;
     settings.setAttribute('aria-expanded', String(open));
     accept.disabled = signal();
+    root.getElementById('status').hidden = !signal() && !readChoice();
     root.getElementById('status').textContent = signal()
       ? 'Your browser privacy signal keeps analytics off.'
       : `Analytics are ${readChoice() === 'accepted' ? 'accepted' : 'off'}. You can change your choice at any time.`;

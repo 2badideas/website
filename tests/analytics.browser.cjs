@@ -58,6 +58,10 @@ const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css
 
     const run = await setup(); const { page, sends } = run;
     await page.goto(origin + '/?secret=never-send#private', { referer: 'https://referral.example/private?email=private' });
+    const desktopHeight = await page.locator('#analytics-controls').evaluate(host => host.shadowRoot.querySelector('section').getBoundingClientRect().height);
+    assert(desktopHeight <= 110, 'Desktop notice should remain a compact strip');
+    assert(await page.getByRole('button', { name: 'Analytics choices', exact: true }).isHidden());
+    await page.screenshot({ path: '/tmp/website-analytics-desktop.png' });
     await page.getByRole('button', { name: 'Accept analytics', exact: true }).click();
     await page.waitForFunction(() => Boolean(window.umami)); await settle(page);
     assert.equal(sends.length, 1); assert.equal(sends[0].type, 'event');
@@ -135,11 +139,12 @@ const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css
       return { x: rect.x, right: rect.right, top: rect.top, bottom: rect.bottom };
     });
     assert(box.x >= 0 && box.right <= 390 && box.top >= 0 && box.bottom <= 844);
+    assert(box.bottom - box.top <= 180, 'Mobile notice should use no more than 180px');
     await mobile.page.screenshot({ path: '/tmp/website-analytics-mobile.png' });
     await mobile.page.getByRole('button', { name: 'Reject analytics', exact: true }).click();
     await mobile.page.getByRole('button', { name: 'Analytics choices', exact: true }).click();
     await mobile.page.keyboard.press('Escape');
     assert(await mobile.page.getByRole('button', { name: 'Analytics choices', exact: true }).evaluate(el => el.getRootNode().activeElement === el));
-    console.log('PASS: Mobile consent layout and keyboard close/focus restoration.');
+    console.log('PASS: Compact desktop/mobile notice, hidden duplicate settings, and keyboard close/focus restoration.');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exit(1); });

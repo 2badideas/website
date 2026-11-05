@@ -2,6 +2,8 @@
 
 Prepared November 4, 2026 against `origin/main` at `a62b4e1972131762da6baf1ae55996cd4d06ec39`. The owner requested Umami and a consent banner and supplied website ID `5ff42a68-829e-4902-9d3b-b4fc38c8f29c`; the owner confirmed the free tier. Jacob reviews and merges. This branch has not been deployed. No existing Umami issue was found; no new issue was requested.
 
+The consent UI is a compact bottom strip with a short explanation, equally styled accept/reject buttons, a privacy-policy link, and a dismiss control. Detailed disclosures remain in the policy. The separate settings control appears after dismissal or a choice, so the notice never displays duplicate controls. Collection and consent behavior are unchanged.
+
 ## Behavior and privacy review
 
 | Finding | Evidence | Release effect |
