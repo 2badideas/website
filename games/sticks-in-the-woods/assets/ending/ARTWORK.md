@@ -1,0 +1,24 @@
+# Ash & Amber — painted ending draft
+
+Generated with the built-in image-generation tool, using the user-selected A — Ash & Amber storyboard as the visual reference. These are original AI-generated painted frames for a silent animated storyboard: camera movement and dissolves, rather than full character animation.
+
+Runtime files (all served locally):
+
+- [Close-up](ash-close.webp)
+- [Standing reveal](ash-wide.webp)
+- [Seated pose](ash-sit.webp)
+
+Original generated PNGs remain in the Codex generated-images folder. Runtime WebP files were encoded at quality 90 without changing their dimensions. No artwork is fetched from an external service by visitors.
+
+## Close-up prompt
+
+Use the attached six-panel "A — ASH & AMBER" storyboard ONLY as an art-direction and character-design reference. Produce ONE finished full-bleed cinematic illustration, NOT a storyboard, no panels, no borders, no text, no stats, no typography. Landscape widescreen 16:9. Match its tactile hand-painted gouache / digital painting look, rich amber rim light, cool grey smoke, burnt forest, beautifully observed bark texture, serious exhausted mood. Hero is a small living cylindrical tree STUMP with face on front of torso, a cut top with growth rings, branch arms and short twig legs. No separate human head, no clothing. Match reference hero identity exactly: heavy drooping weary eyelids, dark eyes with tiny highlights, soot and scratches, mouth slightly open. Dead creatures are peaceful and motionless: closed eyes, no blood, no gore. Painterly cinematic quality, sophisticated original storybook art. SHOT: close-up from the storyboard's panel 02, the weary stump's FACE and upper torso fill the image, front-facing at camera. Center eyes at (50% width, 43% height) and mouth around (50%,64%). Cropped shoulders at bottom, stump top near upper edge. He looks exhausted and breathless, not crying or smiling. Soft charcoal smoky out-of-focus background, a few subtle warm rim highlights from the right, absolutely NO fallen bodies visible yet. The shot should invite a very slow camera drift and faint breathing movement.
+
+## Standing reveal prompt
+
+Use the attached six-panel "A — ASH & AMBER" storyboard ONLY as an art-direction and character-design reference. Produce ONE finished full-bleed cinematic illustration, NOT a storyboard, no panels, no borders, no text, no stats, no typography. Landscape widescreen 16:9. Match its tactile hand-painted gouache / digital painting look, rich amber rim light, cool grey smoke, burnt forest, beautifully observed bark texture, serious exhausted mood. Hero is a small living cylindrical tree STUMP with face on front of torso, a cut top with growth rings, branch arms and short twig legs. No separate human head, no clothing. Match reference hero identity exactly: heavy drooping weary eyelids, dark eyes with tiny highlights, soot and scratches, mouth slightly open. Dead creatures are peaceful and motionless: closed eyes, no blood, no gore. Painterly cinematic quality, sophisticated original storybook art. SHOT: expand the storyboard's panel 04 into an expansive cinematic WIDE shot with a tiny STANDING stump hero centered at x50%, feet at y68%; hero height about 14% of image. His face is turned toward camera, head subtly bowed, arms limp. Burnt valley stretches behind him in layered atmospheric perspective, broken charred trunks, small distant orange glimmers through grey smoke. Recognizable fallen rabbits, wolves, deer, beetles, mushroom creatures and a beaver throughout foreground and middle distance, no gore. Foreground bodies detailed, distant bodies painted softly. Clear space around hero so he reads alone. Dead still, solemn, no action. Strongly staged environmental reveal and beautiful depth, not generic flat shapes. Maintain room at center for portrait framing as well as landscape.
+
+## Seated pose edit prompt
+
+Edit this finished widescreen painted frame into the final SEATED pose of the central stump. Change ONLY the small central living stump character: lower his body onto the ash, bend his twig legs forward, rest his branch forearms on his knees, head/body bowed, eyelids more closed with an exhausted empty expression. His body is a cylindrical stump with face on its front, cut top with rings; preserve his identity, bark texture, warm light, soot marks and scale. His seated silhouette should be shorter than his original standing silhouette; feet stay near the same patch of ground. Keep the entire environment, camera, horizon, light, painting style, resolution, crop, dead animals and their exact positions identical to the input. Do not add or remove animals, trees, objects, smoke or flames. No text, no border, no panels. It must cross-dissolve with the input frame so the environment does not visibly jump. This is the silent seated ending shot for Ash & Amber.
+

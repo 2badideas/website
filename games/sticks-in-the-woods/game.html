@@ -693,8 +693,7 @@ function beginEnding(){
  state='ending';saveProgress();resetTouchControls();show('');
  for(const id of ['hud','pickupPrompt'])$(id).classList.add('hidden');
  $('mobile').classList.remove('active');$('toast').classList.remove('show');$('muteBtn').hidden=true;
- try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();if(!muted&&audio.state==='suspended')audio.resume().catch(()=>{});}catch{audio=null;}
- ending=window.WoodsEnding.create({stats:{waves:wave,kills,score,seconds:runSeconds,xp:runXP},audio,isMuted:()=>muted,toggleMute:()=>$('muteBtn').click(),onReturn:()=>{
+ ending=window.WoodsEnding.create({stats:{waves:wave,kills,score,seconds:runSeconds,xp:runXP},onReturn:()=>{
   ending=null;state='menu';$('muteBtn').hidden=false;show('startScreen');updateProgressUI();last=performance.now();$('startBtn').focus({preventScroll:true});
  }});
 }
