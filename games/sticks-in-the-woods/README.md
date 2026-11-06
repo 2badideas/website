@@ -53,3 +53,20 @@ Touch layouts show a compact health bar, wave number and one-line weapon name at
 Cache advances from v3 to v4. Storage, save format, dependencies and consent behavior are unchanged. The mobile browser suite passed in Edge at 320×568, 390×844 and 844×390, covering HUD bounds, edge placement, pickup availability/collection/range, simultaneous sticks, retained aim, idle fade and cancellation without game JavaScript errors. Portrait layout was also inspected in a screenshot. The existing PWA suite and actual browser v3→v4 upgrade/offline-start suite passed. Physical-device checks remain unperformed.
 
 Run `node games/sticks-in-the-woods/tests/mobile.browser.cjs` with Playwright on NODE_PATH. Set PLAYWRIGHT_CHANNEL=msedge to use Edge; default is chrome. MOBILE_SCREENSHOT optionally saves the portrait check image.
+
+## Wave-100 ending draft — November 5, 2026
+
+Clearing wave 100 awards its normal XP once, saves local progression and replaces the upgrade menu with a roughly 44-second ending. There is no wave 101. The sequence cuts to black, introduces original synthesized music and breathing, fades into a close-up, pulls back across an ash-colored wasteland and fallen-creature tableau, then lowers the stump into a seated pose. The score accelerates and swells before thinning to a final note. At 37 seconds it cuts to black; after a two-second hold, final waves/kills/score/active-play duration/run XP and “Made by 2badIdeas” fade in. Return to title appears after the stats have lingered. A new run resets the timer. The tableau uses a bounded representative field of creatures for rendering performance, not an individual record of every kill.
+
+`ending.js` and `ending.css` are local, cached assets. There are no external media, fonts, dependencies, telemetry events or new storage keys. Stats and elapsed play time stay in memory; the existing progression save format is unchanged. Existing optional analytics still only report the previously approved game start. Cache v4 → v5 includes both new files. Clearing site data removes cached assets as described by the current privacy policy; reloading still starts a fresh run.
+
+| Review | Evidence | Result |
+| --- | --- | --- |
+| Local-only cinematic and stats | ending.js canvas, Web Audio and DOM; game.html beginEnding | No requests or persistence added. |
+| Correct completion and saves | ending.browser.cjs synthetic wave 99/100 scenarios | No ending on wave start; wave-clear XP is awarded once and best wave saves as 100. |
+| Controls and accessibility | Ending mute/skip/return; reduced-motion static wide shot; visibility handling | Desktop/mobile and reduced-motion/no-audio browser cases pass. Hidden tabs pause time/audio. |
+| Offline delivery | sw.js v5; existing PWA suite and browser v4→v5 upgrade suite | New assets cached; old caches isolated, disposable storage preserved, offline game start passes. |
+
+Validation: inline and external JavaScript syntax, PWA suite, mobile-controls browser suite, ending browser suite and browser upgrade/offline suite passed in Edge. Desktop/mobile close-up, wide, seated and stats frames inspected. Music generation, running AudioContext and mute controls were exercised; audio has not been independently reviewed by listening. Physical devices/native installation and production deployment remain unverified. Privacy alignment is ready for owner review within this scope. Run `node games/sticks-in-the-woods/tests/ending.browser.cjs` with Playwright on NODE_PATH and optional PLAYWRIGHT_CHANNEL=msedge; ENDING_SCREENSHOTS saves key frames. Screenshots use synthetic stats only.
+
+Previous main: 3a58c73. Roll back through a PR restoring the previous wave-clear flow and removing the ending assets, with a new worker cache version; preserve progression saves. Jacob reviews and merges.

@@ -40,19 +40,19 @@ const root = path.resolve(__dirname, '..');
     }
     await page.evaluate(() => localStorage.setItem('analytics-save-sentinel', 'preserve-existing-data'));
     let keys = await page.evaluate(() => caches.keys());
-    assert(keys.includes('sticks-in-the-woods-shell-v3') && keys.includes('stick-together-shell-v24'));
+    assert(keys.includes('sticks-in-the-woods-shell-v4') && keys.includes('stick-together-shell-v24'));
     upgraded = true;
     await page.evaluate(async () => { for (const reg of await navigator.serviceWorker.getRegistrations()) await reg.update(); });
     await page.evaluate(async () => {
       const deadline = Date.now() + 30000;
       while (Date.now() < deadline) {
         const keys = await caches.keys();
-        if (keys.includes('sticks-in-the-woods-shell-v4') && keys.includes('stick-together-shell-v24') && !keys.includes('sticks-in-the-woods-shell-v3')) return;
+        if (keys.includes('sticks-in-the-woods-shell-v5') && keys.includes('stick-together-shell-v24') && !keys.includes('sticks-in-the-woods-shell-v4')) return;
         await new Promise(resolve => setTimeout(resolve, 50));
       }
       throw Error('Worker upgrade timed out');
     });
-    for (const cache of ['sticks-in-the-woods-shell-v4', 'stick-together-shell-v24']) {
+    for (const cache of ['sticks-in-the-woods-shell-v5', 'stick-together-shell-v24']) {
       assert(await page.evaluate(async name => Boolean(await (await caches.open(name)).match(location.origin + '/js/analytics.js')), cache));
     }
     await context.setOffline(true);
@@ -60,7 +60,14 @@ const root = path.resolve(__dirname, '..');
       await page.goto(origin + '/games/' + game + '/');
       assert(await page.getByRole('button', { name: 'Reject', exact: true }).isVisible());
       await page.getByRole('button', { name: 'Reject', exact: true }).click();
-      if (game === 'sticks-in-the-woods') { await page.frameLocator('iframe').locator('#startBtn').click(); await page.frameLocator('iframe').locator('#beginRunBtn').click(); }
+      if (game === 'sticks-in-the-woods') {
+        await page.frameLocator('iframe').locator('#startBtn').click();
+        await page.frameLocator('iframe').locator('#beginRunBtn').click();
+        assert.equal(await page.frameLocator('iframe').locator('body').evaluate(() => typeof window.WoodsEnding?.create), 'function', 'Ending code loads offline');
+        for (const asset of ['ending.js', 'ending.css']) {
+          assert(await page.evaluate(async asset => { const response = await fetch('./' + asset); return response.ok && (await response.text()).length > 0; }, asset), asset + ' is available offline');
+        }
+      }
       else await page.locator('#start').click();
       await page.getByRole('button', { name: 'Analytics choices', exact: true }).click();
       await page.getByRole('button', { name: 'Accept', exact: true }).click();
@@ -70,7 +77,7 @@ const root = path.resolve(__dirname, '..');
     }
     assert.deepEqual(external, []);
     keys = await page.evaluate(() => caches.keys());
-    assert(keys.includes('sticks-in-the-woods-shell-v4') && keys.includes('stick-together-shell-v24'));
-    console.log('PASS: Browser workers upgrade Woods v3 to v4 and preserve Deep v24, isolate caches, cache consent controls, preserve storage, and launch/play offline without external requests.');
+    assert(keys.includes('sticks-in-the-woods-shell-v5') && keys.includes('stick-together-shell-v24'));
+    console.log('PASS: Browser workers upgrade Woods v4 to v5 and preserve Deep v24, isolate caches, cache consent controls, preserve storage, and launch/play offline without external requests.');
   } finally { await browser.close(); await new Promise(resolve => server.close(resolve)); }
 })().catch(error => { console.error(error); process.exit(1); });
