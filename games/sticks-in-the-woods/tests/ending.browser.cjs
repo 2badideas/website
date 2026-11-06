@@ -62,13 +62,19 @@ const hook=`let testNow=0;window.endingTest={
    await page.evaluate(()=>window.endingTest.advance(22.6));await snap('wide');
    const wideView=await page.locator('.woods-ending-stage svg').getAttribute('viewBox');
    if(!fallback)assert.notEqual(closeView,wideView,'Camera pulls through the same vector scene');
-   const standingLeg=await page.locator('[data-leg="left"]').getAttribute('d');
-   await page.evaluate(()=>window.endingTest.advance(2.2));await snap('crouch');
-   await page.evaluate(()=>window.endingTest.advance(1.5));await snap('braced');
-   assert((await page.locator('[data-arm="right"]').getAttribute('d')).endsWith('L76 25'),'Hands brace on the ground');
-   await page.evaluate(()=>window.endingTest.advance(1.3));await snap('sit');
-   assert((await page.locator('[data-arm="right"]').getAttribute('d')).endsWith('L57 -3'),'Hands finish resting at knees');
-   assert.notEqual(await page.locator('[data-leg="left"]').getAttribute('d'),standingLeg,'Legs bend into seated pose');
+   assert(await page.locator('[data-leg="left"]').isVisible());
+   await page.evaluate(()=>window.endingTest.advance(1.2));await snap('fall');
+   assert(await page.locator('[data-leg="left"]').isHidden(),'Legs disappear before the drop');
+   assert(await page.locator('[data-leg-shadow="right"]').isHidden(),'Leg outlines disappear too');
+   const falling=await page.locator('[data-torso]').getAttribute('transform');
+   await page.evaluate(()=>window.endingTest.advance(.3));await snap('impact');
+   const impact=await page.locator('[data-torso]').getAttribute('transform');
+   assert.notEqual(impact,falling,'Fast accelerating drop reaches the ground');
+   assert(Number(impact.match(/translate\(0 ([^)]*)/)[1])>=38,'Landing height reached within 0.4 seconds');
+   if(!fallback)assert(Number(await page.locator('[data-impact-dust]').getAttribute('opacity'))>0,'Brief impact dust');
+   await page.evaluate(()=>window.endingTest.advance(3.5));await snap('grounded');
+   assert((await page.locator('[data-arm="right"]').getAttribute('d')).endsWith('L58 20'),'Arms settle beside the body');
+   assert(await page.locator('[data-leg="left"]').isHidden(),'Legs stay gone after landing');
    assert.equal(await page.locator('[data-expression]').getAttribute('data-expression'),'steady');
    await page.evaluate(()=>window.endingTest.advance(2));await snap('black');
    assert(await page.locator('.woods-ending-results').isHidden());
@@ -86,7 +92,7 @@ const hook=`let testNow=0;window.endingTest={
    await page.locator('.woods-ending-skip').click();await page.evaluate(()=>window.endingTest.advance(6));
    assert(await page.locator('.woods-ending-return').isVisible());
    assert.deepEqual(errors,[]);
-   console.log(`PASS: ${mode} wave-100 clear guard, final reward, HTML/SVG camera and seated pose, exact stats, credits, return/new run and skip; no external requests or JS errors.`);
+   console.log(`PASS: ${mode} wave-100 clear guard, final reward, HTML/SVG camera and quick drop, exact stats, credits, return/new run and skip; no external requests or JS errors.`);
    await context.close();
   }
  }finally{await browser.close();}
