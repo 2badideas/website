@@ -55,14 +55,7 @@ const hook=`let testNow=0;window.endingTest={
    const closeView=await page.locator('.woods-ending-stage svg').getAttribute('viewBox');
    const brow=await page.locator('[data-expression]>path').first().getAttribute('d');
    assert(brow.includes('M-31-78L-11-78M11-78L31-78'),'Level brows, no sad raised inner corners');
-   if(fallback)assert(await page.locator('.woods-ending-sound').isHidden(),'No-audio fallback hides music control');
-   else {
-    assert(await page.locator('.woods-ending-sound').isVisible());
-    await page.locator('.woods-ending-sound').click();
-    assert((await page.evaluate(()=>window.endingTest.read())).muted,'Music respects game mute preference');
-    await page.locator('.woods-ending-sound').click();
-    assert(!(await page.evaluate(()=>window.endingTest.read())).muted);
-   }
+   assert.equal(await page.locator('.woods-ending-sound').count(),0,'Silent draft has no audio controls');
    await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));window.endingTest.advance(60);});
    assert(await page.locator('.woods-ending-results').isHidden(),'Backgrounding pauses cinematic time');
    await page.evaluate(()=>{delete document.hidden;document.dispatchEvent(new Event('visibilitychange'));});

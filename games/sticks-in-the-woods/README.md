@@ -58,11 +58,11 @@ Run `node games/sticks-in-the-woods/tests/mobile.browser.cjs` with Playwright on
 
 The user requested an ending built directly in HTML, without generated images, and a character who does not look sad. The scene is now an editable inline SVG built by ending-scene.js: layered burnt landscape, charred trees, ash, six fallen-creature designs and a segmented stump character. The character has level brows, a fixed neutral mouth and steady gaze. The camera continuously changes the same SVG viewBox from face close-up to wide reveal. His legs disappear before a quick fall to the ground; his face stays upright. All raster art and its generation notes are removed from runtime inputs. The standalone preview is self-contained HTML (about 19 KB).
 
-The ending includes a quiet original piano-style accompaniment synthesized locally, with rounded attacks, slow rolled chords and a sparse melody. No breathing or noise effects. Wave-100 completion, final XP award, best-wave save, stats, Made by 2badIdeas credit, skip and return-to-title flow are unchanged. Black 0–4s; fade to close-up; pullback starts at 12s; legs disappear and the quick drop starts at 32s; cut to black at 37s; stats fade at 39s; Return to title at 44s. Hidden tabs pause the timeline. Reduced motion disables the camera zoom and ash drift. Phones retain the whole scene with letterboxing.
+The draft remains silent. Wave-100 completion, final XP award, best-wave save, stats, Made by 2badIdeas credit, skip and return-to-title flow are unchanged. Black 0–4s; fade to close-up; pullback starts at 12s; legs disappear and the quick drop starts at 32s; cut to black at 37s; stats fade at 39s; Return to title at 44s. Hidden tabs pause the timeline. Reduced motion disables the camera zoom and ash drift. Phones retain the whole scene with letterboxing.
 
 | Review | Evidence | Result |
 | --- | --- | --- |
-| Code-built scene, local-only stats | ending-scene.js SVG paths/symbols/gradients; ending.js DOM | No raster images, imported media, network APIs, new storage or telemetry. |
+| Code-built scene, local-only stats | ending-scene.js SVG paths/symbols/gradients; ending.js DOM | No raster images, media, network APIs, new storage or telemetry. |
 | Neutral expression and animation | Level brow paths; data-expression=steady; live viewBox/limb transforms | Browser checks verify the same vector scene pulls back and the legs disappear before a fast drop while expression stays steady. |
 | Completion and persistence | Ending browser suite wave 99/100 checks | Ending begins only after clearing 100; final XP awards once, best wave saves and a new run resets elapsed time. |
 | Offline delivery | sw.js v7; PWA/browser upgrade suites | Current main v4 upgrades to v7, includes ending-scene.js, removes prior image assets, isolates caches and preserves disposable storage. |
@@ -97,10 +97,6 @@ Creature placement now follows the ground's curved horizon at each horizontal po
 
 After landing, the neutral mouth eases into a small smile from 33.8s to 35s and holds until the cut to black. There is no breathing loop. The existing face stays steady during the earlier shots. Stats and timing remain unchanged. Cache v12 includes the revised scene. Final expression browser assertion, desktop/mobile/reduced-motion ending checks, PWA suite and actual v4→v12 offline upgrade checks pass; the final wide frame was inspected visually.
 
-### Light music — November 6, 2026
+### Final silent version — November 6, 2026
 
-Added ending-music.js: an original eight-bar, slow piano-style score using short additive-harmonic note buffers, rounded attacks and decaying partials. No random/noise source, recordings or external assets. It stays quiet, fades in gently and fades out from 34.5s to silence by 37s. Music respects the game mute preference; a Music on/off button appears during the cinematic and is hidden for the stats. Skip, hidden tabs and disposal silence active notes. Seeking skips missed notes instead of playing a backlog. Browsers without audio support still play the scene and show stats.
-
-The local preview now includes music and a mute control. Cache v13 includes the new local script; existing saves, analytics and network behavior are unchanged. The actual-audio browser check verifies real scheduled notes, bounded waveform output (observed peak about 0.028), mute/unmute, background silence, stop and context cleanup. Ending controls/no-audio fallback, PWA and actual v4→v13 offline-upgrade checks pass. No independent listening review or physical-device audio check was performed; soundtrack tone remains for owner review.
-
-Run node games/sticks-in-the-woods/tests/ending-music.browser.cjs with Playwright on NODE_PATH and optional PLAYWRIGHT_CHANNEL=msedge.
+Removed the music module, controls and audio integration at the owner's request. The ending is silent, retaining grounded creatures, correct tree layering, quick leg-disappearance/drop, final smile, stats and Made by 2badIdeas credit. Cache v14 removes music from the cache inputs. JavaScript syntax, desktop/portrait/landscape/reduced-motion ending tests, PWA suite and actual v4-to-v14 offline upgrade checks pass. Physical devices and production remain unverified.
