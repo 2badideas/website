@@ -9,6 +9,11 @@
     stage.setAttribute('role','img');
     stage.setAttribute('aria-label','A steady-eyed stump in a burnt forest. The view pulls back across fallen creatures and his legs disappear before he drops to the ground.');
     let seed=107;const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)|0;return(seed>>>0)/4294967296;};
+    // Match the two quadratic curves forming the visible ground's horizon.
+    const groundY=x=>{
+      const right=x>800,t=clamp(right?(x-800)/900:(x+100)/900);
+      return right?(1-t)*(1-t)*464+2*(1-t)*t*409+t*t*458:(1-t)*(1-t)*470+2*(1-t)*t*421+t*t*464;
+    };
     const branches=(x,y,s)=>`<path d="M${x} ${y}l${-4*s} ${-64*s} ${8*s} ${-61*s} ${-5*s} ${-51*s}m${2*s} ${81*s}l${-27*s} ${-27*s} ${-15*s} ${-36*s}m${42*s} ${27*s}l${24*s} ${-25*s} ${8*s} ${-26*s}" fill="none" stroke="#252326" stroke-width="${9*s}" stroke-linecap="square"/>`;
     let farTrees='',trees='',ash='',cracks='',bodies='',bark='',flecks='';
     for(let i=0;i<90;i++){
@@ -32,9 +37,10 @@
     const fallen=[];
     function addFallen(count,minY,range,zone){
       for(let i=0;i<count;i++){
-        const y=minY+random()*range,x=random()*1800-100;
+        const distance=random(),x=random()*1800-100,horizon=groundY(x);
+        const y=zone==='background'?horizon+12+distance*108:Math.max(minY+distance*range,horizon+15);
         if(Math.abs(x-800)<85&&Math.abs(y-565)<90)continue;
-        const size=zone==='background'?.075+(y-420)/440:.15+(y-420)/210;
+        const size=zone==='background'?.065+(y-horizon)/420:.1+(y-horizon)/200;
         fallen.push({x,y,s:size,type:i%6,flip:i%2?-1:1,zone});
       }
     }
@@ -96,7 +102,7 @@
     <path d="M-100 415L40 300 100 323 280 250 370 304 550 270 700 342 870 260 1020 312 1220 236 1400 298 1680 210V600H-100Z" fill="#43414a" opacity=".65"/>
     <path d="M-100 443L90 350 250 410 440 344 680 426 900 353 1080 392 1350 330 1680 410V600H-100Z" fill="#4b4244"/>
     <g opacity=".38">${farTrees}</g>
-    <path d="M-100 470Q350 421 800 464Q1250 409 1700 458V1400H-100Z" fill="url(#we-ground)"/>
+    <path data-terrain="true" d="M-100 470Q350 421 800 464Q1250 409 1700 458V1400H-100Z" fill="url(#we-ground)"/>
     <path d="M-100 530Q340 456 660 490T1700 512" fill="none" stroke="#a08a73" stroke-width="3" opacity=".25"/>
     <g>${ash}${cracks}</g><g data-depth-layer="true">${trees}${bodies}</g>
     <g data-hero="true" data-depth="588" transform="translate(800 560)">

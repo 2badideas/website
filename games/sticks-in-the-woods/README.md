@@ -88,3 +88,7 @@ Cache v9 ships this revision. Browser checks cover leg/outline disappearance, fa
 ### Foreground overlap fix — November 6, 2026
 
 Trees, fallen creatures and the stump now share one SVG drawing order based on their ground contact positions. Foreground trunks correctly cover more distant creatures, while closer creatures can still cover trees behind them. Scene layout, animation and stats are unchanged. Cache v10 delivers the updated scene. The wide frame was visually inspected; the ending browser suite, PWA suite and actual v4→v10 offline/upgrade browser checks pass.
+
+### Distant creature grounding — November 6, 2026
+
+Creature placement now follows the ground's curved horizon at each horizontal position, with perspective scale based on distance into the ground plane. This removes distant figures placed above the visible terrain. Existing depth ordering is retained. Cache v11 delivers the fix. Desktop wide frame visually inspected; desktop/mobile/reduced-motion ending checks, PWA suite and actual v4→v11 offline upgrade checks pass. No data-handling changes.
