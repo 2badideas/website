@@ -93,7 +93,8 @@
   #mobile{display:none;position:fixed;inset:0;z-index:4;pointer-events:none;--stick-size:clamp(116px,32vw,150px);--control-bottom:calc(30px + env(safe-area-inset-bottom,0px));--edge:18px}
   .touch-stick{position:absolute;bottom:var(--control-bottom);width:var(--stick-size);height:var(--stick-size);border:2px solid #a9d89a77;border-radius:50%;background:radial-gradient(circle,#294d3c9c,#122b22b0);box-shadow:inset 0 0 28px #071c1877,0 6px 22px #0004;pointer-events:auto;touch-action:none;-webkit-tap-highlight-color:transparent}
   #joyArea{left:calc(var(--edge) + env(safe-area-inset-left,0px))}
-  #aimArea{right:calc(var(--edge) + env(safe-area-inset-right,0px));border-color:#f2cf8980;background:radial-gradient(circle,#6b573677,#2c3021bb)}
+  #aimArea{opacity:.12;transition:opacity .2s;right:calc(var(--edge) + env(safe-area-inset-right,0px));border-color:#f2cf8980;background:radial-gradient(circle,#6b573677,#2c3021bb)}
+  #aimArea.active-input{opacity:1}
   .touch-stick::before,.touch-stick::after{content:'';position:absolute;background:#d9e6bc20;pointer-events:none}
   .touch-stick::before{left:16%;right:16%;top:50%;height:1px}.touch-stick::after{top:16%;bottom:16%;left:50%;width:1px}
   .stick-thumb{position:absolute;left:calc(50% - 23px);top:calc(50% - 23px);width:46px;height:46px;border-radius:50%;border:2px solid #ebfdd7b5;background:#b6e697a8;box-shadow:0 0 18px #b8dca53b;display:grid;place-items:center;color:#18372d;font-size:25px;font-weight:900;pointer-events:none}
@@ -155,6 +156,23 @@
 
   @media(max-width:600px){.loadout-card{grid-template-columns:68px 1fr;gap:5px 10px}.loadout-card .loadout-icon{width:68px;height:68px}}
   @media(max-height:500px){.loadout-card{grid-template-columns:64px 1fr}.loadout-card .loadout-icon{width:64px;height:64px}}
+
+  /* Compact touch HUD and edge controls leave the playfield clear. */
+  @media (any-pointer:coarse){
+    #mobile{--stick-size:clamp(104px,28vw,124px);--edge:14px;--control-bottom:calc(20px + env(safe-area-inset-bottom,0px))}
+    #hud{padding:calc(8px + env(safe-area-inset-top,0px)) calc(92px + env(safe-area-inset-right,0px)) 0 calc(10px + env(safe-area-inset-left,0px))}
+    .topline{flex-direction:row;align-items:center;gap:8px}
+    .brand,.health-head>span:first-child,.stat:not(:nth-child(2)),#mobileWeaponBonus,#mobileTorchStatus{display:none}
+    .healthbox{width:clamp(90px,32vw,160px);margin:0}.health-head{margin-bottom:3px;font-size:9px}.track{height:7px;border-width:1px}
+    .stats{width:auto;margin:0;gap:0}.stat{flex:none;padding:0;min-width:0;border:0;background:none;box-shadow:none}.stat small{font-size:8px;margin-bottom:1px}.stat b{font-size:16px}
+    #mobileLoadout{top:calc(42px + env(safe-area-inset-top,0px));left:calc(10px + env(safe-area-inset-left,0px));max-width:calc(100vw - 110px);padding:0;border:0;background:none}#mobileWeaponName{font-size:10px;text-shadow:0 1px 4px #000}
+    #pauseBtn,#muteBtn{top:calc(8px + env(safe-area-inset-top,0px));height:36px;min-width:36px;width:36px;padding:3px;border-radius:10px}#pauseBtn{right:calc(8px + env(safe-area-inset-right,0px))}#muteBtn{right:calc(50px + env(safe-area-inset-right,0px));font-size:10px}
+    .mobileButtons{position:static;transform:none;pointer-events:none}.mobileBtn{width:48px;height:48px;font-size:9px;border-radius:14px;pointer-events:auto}.mobileBtn .button-icon{font-size:18px}
+    #dashBtn,#burstBtn,#pickupBtn{position:absolute;bottom:calc(var(--control-bottom) + var(--stick-size) + 12px)}
+    #dashBtn{left:calc(var(--edge) + env(safe-area-inset-left,0px))}#burstBtn,#pickupBtn{right:calc(var(--edge) + env(safe-area-inset-right,0px))}
+    #pickupBtn{bottom:calc(var(--control-bottom) + var(--stick-size) + 68px)}#pickupBtn[hidden]{display:none}
+    #pickupPrompt{display:none}.stick-label{font-size:8px;top:-17px}
+  }
 </style>
   <meta name="theme-color" content="#101d18" />
   <meta name="mobile-web-app-capable" content="yes" />
@@ -184,7 +202,7 @@
   <div id="aimArea" class="touch-stick" role="group" aria-label="Aim and attack joystick"><span class="stick-label">AIM + ATTACK</span><div id="aimThumb" class="stick-thumb">⌖</div></div>
   <div class="mobileButtons">
     <button type="button" class="mobileBtn" id="dashBtn" aria-label="Dash"><span class="button-icon" aria-hidden="true">⇢</span><span id="mobileDashLabel">DASH</span></button>
-    <button type="button" class="mobileBtn" id="pickupBtn" aria-label="Pick up nearby item"><span class="button-icon" aria-hidden="true">✋</span><span id="mobilePickupLabel">PICK UP</span></button>
+    <button type="button" class="mobileBtn" id="pickupBtn" hidden aria-label="Pick up nearby item"><span class="button-icon" aria-hidden="true">✋</span><span id="mobilePickupLabel">PICK UP</span></button>
     <button type="button" class="mobileBtn" id="burstBtn" aria-label="Root burst"><span class="button-icon" aria-hidden="true">✦</span><span id="mobileBurstLabel">BURST</span></button>
   </div>
 </div>
@@ -694,7 +712,7 @@ function updateUI(){const wp=p.weapon?WEAPONS[p.weapon]:null;
  $('cycleLabel').textContent=(isNight()?'NIGHT ':'DAY ')+(Math.floor(Math.max(0,wave-1)/5)+1);$('cycleStat').textContent=isNight()?'☾':'☀';
  $('torchStatus').textContent=p.torch?'Off hand: Fire Plant Torch · aim to light your way':'Off hand empty · pick up a torch before night';
  $('weaponName').textContent=wp?weaponLabel(p.weapon,p.weaponLevel):'Bare branches';$('weaponDetail').textContent=wp?wp.detail+' · +'+Math.round(weaponLevelBonus(p.weaponLevel)*100)+'% damage':'Unarmed • attack with both arms';
- const candidate=state==='playing'?nearestWeapon():null;$('pickupBtn').classList.toggle('available',!!candidate);$('mobilePickupLabel').textContent=candidate?(candidate.type==='torch'?'TORCH':wp?'SWAP':'PICK UP'):'PICK UP';$('pickupPrompt').classList.toggle('hidden',!candidate);
+ const candidate=state==='playing'?nearestWeapon():null;$('pickupBtn').hidden=!candidate;$('pickupBtn').classList.toggle('available',!!candidate);$('mobilePickupLabel').textContent=candidate?(candidate.type==='torch'?'TORCH':wp?'SWAP':'PICK UP'):'PICK UP';$('pickupPrompt').classList.toggle('hidden',!candidate);
  if(candidate)$('pickupLabel').textContent=(candidate.type!=='torch'&&wp?'SWAP FOR ':'PICK UP ')+weaponLabel(candidate.type,candidate.level);
  $('healthText').textContent=`${Math.ceil(p.hp)} / ${p.maxHp}`;$('healthFill').style.width=`${clamp(p.hp/p.maxHp*100,0,100)}%`;$('waveStat').textContent=String(wave).padStart(2,'0');$('killStat').textContent=kills;$('scoreStat').textContent=score;$('dashFill').style.width=`${(1-p.dashCd/p.dashMax)*100}%`;$('burstFill').style.width=`${(1-p.burstCd/p.burstMax)*100}%`;$('dashAbility').classList.toggle('oncool',p.dashCd>0);$('burstAbility').classList.toggle('oncool',p.burstCd>0);$('dashLabel').textContent=p.dashCd>0?p.dashCd.toFixed(1)+'s':'SPACE';$('burstLabel').textContent=p.burstCd>0?p.burstCd.toFixed(1)+'s':'Q'}
 function pause(){if(state==='playing'){state='paused';show('pauseScreen');$('mobile').classList.remove('active')}else if(state==='paused'){state='playing';show('');$('mobile').classList.add('active');last=performance.now()}}
@@ -1161,7 +1179,7 @@ function resetTouchControls(){
  for(const [area,thumb,stick] of [[$('joyArea'),$('joyThumb'),joystick],[$('aimArea'),$('aimThumb'),touchAim]]){
   const id=stick.id;stick.id=null;stick.active=false;stick.dx=stick.dy=0;
   if(id!==null&&area.hasPointerCapture(id))area.releasePointerCapture(id);
-  thumb.style.transform='';area.classList.remove('engaged');
+  thumb.style.transform='';area.classList.remove('engaged','active-input');
  }
  touchAim.engaged=false;mouse.down=false;
 }
@@ -1178,9 +1196,9 @@ function bindStick(areaId,thumbId,stick,isAim){
    area.classList.toggle('engaged',touchAim.engaged);
   }
  }
- area.addEventListener('pointerdown',e=>{if(state!=='playing'||stick.id!==null)return;e.preventDefault();stick.id=e.pointerId;stick.active=true;area.setPointerCapture(e.pointerId);move(e)});
+ area.addEventListener('pointerdown',e=>{if(state!=='playing'||stick.id!==null)return;e.preventDefault();stick.id=e.pointerId;stick.active=true;area.classList.add('active-input');area.setPointerCapture(e.pointerId);move(e)});
  area.addEventListener('pointermove',e=>{if(e.pointerId!==stick.id)return;e.preventDefault();move(e)});
- function end(e){if(e.pointerId!==stick.id)return;stick.id=null;stick.active=false;stick.dx=stick.dy=0;if(isAim)touchAim.engaged=false;thumb.style.transform='';area.classList.remove('engaged')}
+ function end(e){if(e.pointerId!==stick.id)return;stick.id=null;stick.active=false;stick.dx=stick.dy=0;if(isAim)touchAim.engaged=false;thumb.style.transform='';area.classList.remove('engaged','active-input')}
  for(const type of ['pointerup','pointercancel','lostpointercapture'])area.addEventListener(type,end);
 }
 bindStick('joyArea','joyThumb',joystick,false);bindStick('aimArea','aimThumb',touchAim,true);
