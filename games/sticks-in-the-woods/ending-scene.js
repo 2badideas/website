@@ -17,8 +17,8 @@
     }
     for(let i=0;i<27;i++){
       const side=i%2?1:-1,x=800+side*(310+random()*650),y=450+random()*440,s=.5+(y-450)/360;
-      trees+=branches(x,y,s);
-      trees+=`<path d="M${x-3} ${y-12}l${-2*s} ${-70*s}" stroke="#ab6036" stroke-width="${s}" opacity=".5"/>`;
+      trees+=`<g data-tree="true" data-depth="${y}">`+branches(x,y,s);
+      trees+=`<path d="M${x-3} ${y-12}l${-2*s} ${-70*s}" stroke="#ab6036" stroke-width="${s}" opacity=".5"/></g>`;
     }
     for(let i=0;i<420;i++){
       const x=random()*1700-50,y=420+random()*500,r=.4+(y-420)/130*random();
@@ -42,7 +42,7 @@
     addFallen(250,424,108,'background');
     addFallen(90,495,135,'midground');
     fallen.sort((a,b)=>a.y-b.y);
-    for(const b of fallen)bodies+=`<g data-fallen="${b.zone}" transform="translate(${b.x} ${b.y}) scale(${b.s*b.flip} ${b.s})"><use x="-70" y="-40" width="140" height="80" href="#we-${['wolf','rabbit','deer','beaver','beetle','mushroom'][b.type]}"/></g>`;
+    for(const b of fallen)bodies+=`<g data-fallen="${b.zone}" data-depth="${b.y+b.s*10}" transform="translate(${b.x} ${b.y}) scale(${b.s*b.flip} ${b.s})"><use x="-70" y="-40" width="140" height="80" href="#we-${['wolf','rabbit','deer','beaver','beetle','mushroom'][b.type]}"/></g>`;
     for(let i=0;i<24;i++){
       const x=-40+i*3.5,top=-110+random()*10,bottom=-29+random()*12;
       bark+=`<path d="M${x} ${top}q${random()*7-3} 17 ${random()*5-2} 34t${random()*5-2} ${bottom-top-34}" fill="none" stroke="${i%3?'#51382b':'#d1a56d'}" stroke-width="${i%4?.55:1.4}" opacity=".6"/>`;
@@ -98,8 +98,8 @@
     <g opacity=".38">${farTrees}</g>
     <path d="M-100 470Q350 421 800 464Q1250 409 1700 458V1400H-100Z" fill="url(#we-ground)"/>
     <path d="M-100 530Q340 456 660 490T1700 512" fill="none" stroke="#a08a73" stroke-width="3" opacity=".25"/>
-    <g>${ash}${cracks}</g><g>${trees}</g><g>${bodies}</g>
-    <g data-hero="true" transform="translate(800 560)">
+    <g>${ash}${cracks}</g><g data-depth-layer="true">${trees}${bodies}</g>
+    <g data-hero="true" data-depth="588" transform="translate(800 560)">
       <g data-impact-dust="true" opacity="0" fill="#b2a18a"><ellipse cx="-27" cy="24" rx="12" ry="4"/><ellipse cx="25" cy="24" rx="11" ry="4"/><ellipse cx="-46" cy="25" rx="8" ry="3"/><ellipse cx="47" cy="25" rx="8" ry="3"/></g>
       <ellipse cx="1" cy="28" rx="63" ry="13" fill="#11171b" opacity=".7"/>
       <path data-leg-shadow="left" fill="none" stroke="#47372d" stroke-width="17" stroke-linejoin="round" stroke-linecap="round"/><path data-leg="left" stroke-linejoin="round" fill="none" stroke="url(#we-leg)" stroke-width="13" stroke-linecap="round"/>
@@ -132,6 +132,11 @@
     <g data-drifting-ash="true">${flecks}</g>
     <rect x="-2000" y="-2000" width="5600" height="5000" fill="none"/>
     </svg><div class="woods-ending-shade"></div>`;
+    // Trees, creatures and the stump share one ground-depth ordering.
+    // A nearby trunk must cover bodies farther away, while nearer bodies cover it.
+    const depthLayer=stage.querySelector('[data-depth-layer]');
+    depthLayer.append(stage.querySelector('[data-hero]'));
+    depthLayer.append(...[...depthLayer.children].sort((a,b)=>Number(a.dataset.depth)-Number(b.dataset.depth)));
     const svg=stage.querySelector('svg'),torso=stage.querySelector('[data-torso]'),mouth=stage.querySelector('[data-mouth]'),eyes=stage.querySelector('[data-eyes]');
     const leftLeg=stage.querySelector('[data-leg="left"]'),rightLeg=stage.querySelector('[data-leg="right"]');
     const leftArm=stage.querySelector('[data-arm="left"]'),rightArm=stage.querySelector('[data-arm="right"]'),drift=stage.querySelector('[data-drifting-ash]');

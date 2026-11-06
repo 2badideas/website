@@ -84,3 +84,7 @@ Cache v8 replaces v7 for the changed scene. Browser checks additionally verify t
 Replaces the sitting sequence: both legs and their outlines disappear at 32s; the stump accelerates downward over 0.32 seconds. Arms lag slightly, followed by a small impact compression/rebound and brief ash puff, then settle at his sides. The body stays grounded and the legs remain hidden. The face remains steady and there is no breathing loop or sound. The existing dense background, black cut, stats and credit stay the same. Reduced-motion mode suppresses impact dust and squash/rebound.
 
 Cache v9 ships this revision. Browser checks cover leg/outline disappearance, fast landing, impact dust and grounded pose alongside the existing desktop/mobile, completion, stats and return checks. The local standalone preview has a Preview drop shortcut. No data-handling or save changes.
+
+### Foreground overlap fix — November 6, 2026
+
+Trees, fallen creatures and the stump now share one SVG drawing order based on their ground contact positions. Foreground trunks correctly cover more distant creatures, while closer creatures can still cover trees behind them. Scene layout, animation and stats are unchanged. Cache v10 delivers the updated scene. The wide frame was visually inspected; the ending browser suite, PWA suite and actual v4→v10 offline/upgrade browser checks pass.

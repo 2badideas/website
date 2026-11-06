@@ -47,12 +47,12 @@ const root = path.resolve(__dirname, '..');
       const deadline = Date.now() + 30000;
       while (Date.now() < deadline) {
         const keys = await caches.keys();
-        if (keys.includes('sticks-in-the-woods-shell-v9') && keys.includes('stick-together-shell-v24') && !keys.includes('sticks-in-the-woods-shell-v4')) return;
+        if (keys.includes('sticks-in-the-woods-shell-v10') && keys.includes('stick-together-shell-v24') && !keys.includes('sticks-in-the-woods-shell-v4')) return;
         await new Promise(resolve => setTimeout(resolve, 50));
       }
       throw Error('Worker upgrade timed out');
     });
-    for (const cache of ['sticks-in-the-woods-shell-v9', 'stick-together-shell-v24']) {
+    for (const cache of ['sticks-in-the-woods-shell-v10', 'stick-together-shell-v24']) {
       assert(await page.evaluate(async name => Boolean(await (await caches.open(name)).match(location.origin + '/js/analytics.js')), cache));
     }
     await context.setOffline(true);
@@ -77,7 +77,7 @@ const root = path.resolve(__dirname, '..');
     }
     assert.deepEqual(external, []);
     keys = await page.evaluate(() => caches.keys());
-    assert(keys.includes('sticks-in-the-woods-shell-v9') && keys.includes('stick-together-shell-v24'));
-    console.log('PASS: Browser workers upgrade Woods v4 to v9 and preserve Deep v24, isolate caches, cache consent controls, preserve storage, and launch/play offline without external requests.');
+    assert(keys.includes('sticks-in-the-woods-shell-v10') && keys.includes('stick-together-shell-v24'));
+    console.log('PASS: Browser workers upgrade Woods v4 to v10 and preserve Deep v24, isolate caches, cache consent controls, preserve storage, and launch/play offline without external requests.');
   } finally { await browser.close(); await new Promise(resolve => server.close(resolve)); }
 })().catch(error => { console.error(error); process.exit(1); });
