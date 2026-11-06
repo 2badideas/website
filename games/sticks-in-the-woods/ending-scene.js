@@ -127,7 +127,7 @@
             <circle cx="-23.3" cy="-67" r="1.2" fill="#e6d7ac"/><circle cx="20.7" cy="-67" r="1.2" fill="#e6d7ac"/>
           </g>
           <path d="M-31-70L-11-70M11-70L31-70" stroke="#614832" stroke-width="2"/>
-          <ellipse data-mouth="true" cy="-43" rx="5.5" ry="2" fill="#342b25"/>
+          <ellipse data-mouth="true" cy="-43" rx="5.5" ry="2" fill="#342b25"/><path data-smile="true" d="M-5.5-43Q0-43 5.5-43" fill="none" stroke="#342b25" stroke-width="2.2" stroke-linecap="round" opacity="0"/>
           <path d="M15-49l11-6M15-47l12-6" stroke="#4c3d30" stroke-width=".8"/><path d="M-7-40l13 0" stroke="#c29b67" opacity=".6"/>
         </g>
       </g>
@@ -158,6 +158,11 @@
       const squash=!reduced&&contact>=0?.045*Math.exp(-contact*11):0;
       torso.setAttribute('transform',`translate(0 ${drop}) translate(0 -16) scale(${1+squash*.5} ${1-squash}) translate(0 16)`);
       mouth.setAttribute('ry','1.3');
+      const smile=ease((t-33.8)/1.2),smilePath=stage.querySelector('[data-smile]');
+      mouth.setAttribute('opacity',String(1-smile));
+      smilePath.setAttribute('opacity',String(smile));
+      smilePath.setAttribute('d',`M${-5.5-smile*3.5} ${-43-smile*2}Q0 ${-43+smile*7} ${5.5+smile*3.5} ${-43-smile*2}`);
+      stage.querySelector('[data-expression]').setAttribute('data-expression',smile>0?'smiling':'steady');
       const blink=!reduced&&((t>9.1&&t<9.3)||(t>23.1&&t<23.3));
       eyes.setAttribute('transform',blink?'translate(0 -65) scale(1 .15) translate(0 65)':'');
       const armFall=clamp((t-32-.07)/.32),armDrop=40*armFall*armFall+rebound;

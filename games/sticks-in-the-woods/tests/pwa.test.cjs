@@ -42,7 +42,7 @@ async function serviceWorkerTests() {
   }
   broken = '';
   await dispatch('install');
-  assert.equal(stores.get('sticks-in-the-woods-shell-v11').size, 13);
+  assert.equal(stores.get('sticks-in-the-woods-shell-v12').size, 13);
   stores.set('sticks-in-the-woods-shell-old', new Map());
   stores.set('stick-together-shell-v14', new Map());
   await dispatch('activate');

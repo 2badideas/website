@@ -92,3 +92,7 @@ Trees, fallen creatures and the stump now share one SVG drawing order based on t
 ### Distant creature grounding — November 6, 2026
 
 Creature placement now follows the ground's curved horizon at each horizontal position, with perspective scale based on distance into the ground plane. This removes distant figures placed above the visible terrain. Existing depth ordering is retained. Cache v11 delivers the fix. Desktop wide frame visually inspected; desktop/mobile/reduced-motion ending checks, PWA suite and actual v4→v11 offline upgrade checks pass. No data-handling changes.
+
+### Final smile — November 6, 2026
+
+After landing, the neutral mouth eases into a small smile from 33.8s to 35s and holds until the cut to black. There is no breathing loop. The existing face stays steady during the earlier shots. Stats and timing remain unchanged. Cache v12 includes the revised scene. Final expression browser assertion, desktop/mobile/reduced-motion ending checks, PWA suite and actual v4→v12 offline upgrade checks pass; the final wide frame was inspected visually.

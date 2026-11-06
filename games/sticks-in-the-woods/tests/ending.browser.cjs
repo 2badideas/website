@@ -75,7 +75,7 @@ const hook=`let testNow=0;window.endingTest={
    await page.evaluate(()=>window.endingTest.advance(3.5));await snap('grounded');
    assert((await page.locator('[data-arm="right"]').getAttribute('d')).endsWith('L58 20'),'Arms settle beside the body');
    assert(await page.locator('[data-leg="left"]').isHidden(),'Legs stay gone after landing');
-   assert.equal(await page.locator('[data-expression]').getAttribute('data-expression'),'steady');
+   assert.equal(await page.locator('[data-expression]').getAttribute('data-expression'),'smiling');
    await page.evaluate(()=>window.endingTest.advance(2));await snap('black');
    assert(await page.locator('.woods-ending-results').isHidden());
    await page.evaluate(()=>window.endingTest.advance(5));await snap('stats');
