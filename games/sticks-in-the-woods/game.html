@@ -187,6 +187,7 @@
   <script src="../../js/analytics.js" defer></script>
   <link rel="stylesheet" href="ending.css" />
   <script src="ending-scene.js" defer></script>
+  <script src="ending-music.js" defer></script>
   <script src="ending.js" defer></script>
 </head>
 <body>
@@ -694,7 +695,7 @@ function beginEnding(){
  state='ending';saveProgress();resetTouchControls();show('');
  for(const id of ['hud','pickupPrompt'])$(id).classList.add('hidden');
  $('mobile').classList.remove('active');$('toast').classList.remove('show');$('muteBtn').hidden=true;
- ending=window.WoodsEnding.create({stats:{waves:wave,kills,score,seconds:runSeconds,xp:runXP},onReturn:()=>{
+ ending=window.WoodsEnding.create({stats:{waves:wave,kills,score,seconds:runSeconds,xp:runXP},audio,isMuted:()=>muted,toggleMute:()=>$('muteBtn').click(),onReturn:()=>{
   ending=null;state='menu';$('muteBtn').hidden=false;show('startScreen');updateProgressUI();last=performance.now();$('startBtn').focus({preventScroll:true});
  }});
 }

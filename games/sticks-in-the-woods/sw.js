@@ -1,6 +1,6 @@
 const CACHE_PREFIX = 'sticks-in-the-woods-shell-';
-const CACHE = CACHE_PREFIX + 'v12';
-const SHELL = ['../../js/analytics.js', './', './index.html', './game.html', './ending.js', './ending.css', './ending-scene.js', './pwa.js', './pwa.css', './manifest.webmanifest', './assets/icon-180.png', './assets/icon-192.png', './assets/icon-512.png'];
+const CACHE = CACHE_PREFIX + 'v13';
+const SHELL = ['../../js/analytics.js', './', './index.html', './game.html', './ending.js', './ending-music.js', './ending.css', './ending-scene.js', './pwa.js', './pwa.css', './manifest.webmanifest', './assets/icon-180.png', './assets/icon-192.png', './assets/icon-512.png'];
 const shellURLs = new Set(SHELL.map(path => new URL(path, self.registration.scope).href));
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
