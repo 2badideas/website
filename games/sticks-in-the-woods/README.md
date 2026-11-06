@@ -54,21 +54,21 @@ Cache advances from v3 to v4. Storage, save format, dependencies and consent beh
 
 Run `node games/sticks-in-the-woods/tests/mobile.browser.cjs` with Playwright on NODE_PATH. Set PLAYWRIGHT_CHANNEL=msedge to use Edge; default is chrome. MOBILE_SCREENSHOT optionally saves the portrait check image.
 
-## Ash & Amber silent ending draft — November 5, 2026
+## HTML/SVG ending draft — November 6, 2026
 
-The user selected storyboard A (Ash & Amber) after rejecting the first procedural art and sound draft. The revised animatic uses three painted frames: weary close-up, standing wasteland reveal and a matching seated pose. Camera drift, a slow pullback and dissolves establish the pacing. This is a silent animated storyboard for review, with no synthesized breathing or music. The existing stats page, credit, stats values and return-to-title flow are retained.
+The user requested an ending built directly in HTML, without generated images, and a character who does not look sad. The scene is now an editable inline SVG built by ending-scene.js: layered burnt landscape, charred trees, ash, six fallen-creature designs and a segmented stump character. The character has level brows, a neutral breathing mouth and steady gaze. The camera continuously changes the same SVG viewBox from face close-up to wide reveal. Body/arms/legs animate into a seated pose; the pose keeps his face upright. All raster art and its generation notes are removed from runtime inputs. The standalone preview is self-contained HTML (about 19 KB).
 
-Clearing wave 100 awards normal XP once, saves progression and starts the ending; there is no wave 101. The image fade starts after four seconds of black. The pullback starts at 12s, the seated pose dissolves in at 32s, then a hard cut to black at 37s. Stats fade in after a two-second hold; Return to title appears at 44s. Time excludes paused gameplay and upgrade menus. Skip remains available while artwork loads or if loading fails. Reduced-motion mode removes zoom/drift. Hidden tabs pause the timeline. Phones retain the full landscape scene with letterboxing.
-
-The local assets are ending.js/css and assets/ending/ash-close.webp, ash-wide.webp and ash-sit.webp (about 1 MB combined). Asset-generation prompts and provenance are in assets/ending/ARTWORK.md. Cache v4 (current main) → v6 includes all three images. No runtime remote media, dependencies, new storage keys or telemetry events are added. Existing save format and consent behavior are unchanged; the ending's stats stay in memory. Site-data deletion works as documented in privacy.html.
+The draft remains silent. Wave-100 completion, final XP award, best-wave save, stats, Made by 2badIdeas credit, skip and return-to-title flow are unchanged. Black 0–4s; fade to close-up; pullback starts at 12s; sitting starts at 32s; cut to black at 37s; stats fade at 39s; Return to title at 44s. Hidden tabs pause the timeline. Reduced motion disables the camera zoom, breathing and ash drift. Phones retain the whole scene with letterboxing.
 
 | Review | Evidence | Result |
 | --- | --- | --- |
-| Local-only artwork and stats | ending.js Image URLs and canvas; game.html beginEnding | Same-origin static image requests; no audio creation, collection or persistence. |
-| Completion and saves | ending.browser.cjs wave 99/100 scenarios | Ending begins only after clearing 100; final XP is awarded once; best wave saves. |
-| Controls and fallbacks | Loading/error skip, reduced-motion, visibility listener | Browser checks cover desktop/mobile, reduced motion, no audio API and missing artwork. |
-| Offline delivery | sw.js v6; PWA and actual upgrade browser suites | Painted assets cached, unrelated caches and disposable storage preserved. |
+| Code-built scene, local-only stats | ending-scene.js SVG paths/symbols/gradients; ending.js DOM | No raster images, media, network APIs, new storage or telemetry. |
+| Neutral expression and animation | Level brow paths; data-expression=steady; live viewBox/limb transforms | Browser checks verify the same vector scene pulls back and the legs bend while expression stays steady. |
+| Completion and persistence | Ending browser suite wave 99/100 checks | Ending begins only after clearing 100; final XP awards once, best wave saves and a new run resets elapsed time. |
+| Offline delivery | sw.js v7; PWA/browser upgrade suites | Current main v4 upgrades to v7, includes ending-scene.js, removes prior image assets, isolates caches and preserves disposable storage. |
 
-Validation: ending browser suite, existing PWA suite, syntax checks, and diff checks passed in Edge. Close-up, wide, seated and stats frames inspected on desktop/mobile. The actual cache-upgrade/offline suite covers v4→v6 and each painted asset. This is ready for visual review; physical devices and production deployment remain unverified.
+No dependency, save format, analytics or privacy-policy changes. Existing scores/inputs/progress remain on-device and the current consent controller is retained. Runtime fonts/assets remain local except the separately consented tracker. Clearing site data removes cached scene code and local progression as documented in privacy.html.
 
-Run node games/sticks-in-the-woods/tests/ending.browser.cjs with Playwright on NODE_PATH and optional PLAYWRIGHT_CHANNEL=msedge; ENDING_SCREENSHOTS saves key frames. Screenshots and the standalone preview use synthetic stats. Current main before this draft is 3a58c73. Roll back through a PR restoring the prior wave-clear flow and advancing the cache version; preserve progression saves. Jacob reviews and merges draft PR #11.
+Validation: JavaScript syntax, PWA suite and ending browser suite passed in Edge for desktop, portrait phone, landscape phone and reduced-motion/no-audio cases. Tests cover the no-raster requirement, level brows, continuous camera, seated pose, wave-clear guard, idempotent reward, exact stats, background pause, skip and return/new run. Desktop close-up/wide/seated and mobile layouts were visually inspected. Actual browser v4→v7 upgrade/offline checks pass for all ending code/styles and preserved storage. Physical devices, Safari and production remain unverified.
+
+Run node games/sticks-in-the-woods/tests/ending.browser.cjs with Playwright on NODE_PATH and optional PLAYWRIGHT_CHANNEL=msedge. ENDING_SCREENSHOTS saves synthetic check frames. Previous main: 3a58c73. Roll back through a PR restoring the prior wave-clear flow and advancing the worker version; preserve saves. Jacob reviews and merges draft PR #11.

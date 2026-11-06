@@ -42,7 +42,7 @@ async function serviceWorkerTests() {
   }
   broken = '';
   await dispatch('install');
-  assert.equal(stores.get('sticks-in-the-woods-shell-v6').size, 15);
+  assert.equal(stores.get('sticks-in-the-woods-shell-v7').size, 13);
   stores.set('sticks-in-the-woods-shell-old', new Map());
   stores.set('stick-together-shell-v14', new Map());
   await dispatch('activate');
@@ -53,7 +53,7 @@ async function serviceWorkerTests() {
     const page = await dispatch('fetch', {request: {url: base + route, method: 'GET', mode: 'navigate'}});
     assert((await page.text()).includes(route.startsWith('game.html') ? 'id="game"' : 'src="game.html"'));
   }
-  for (const asset of ['assets/ending/ash-close.webp', 'assets/ending/ash-wide.webp', 'assets/ending/ash-sit.webp', 'ending.js', 'ending.css', 'pwa.js', 'pwa.css', 'manifest.webmanifest', 'assets/icon-180.png', 'assets/icon-192.png', 'assets/icon-512.png']) {
+  for (const asset of ['ending-scene.js', 'ending.js', 'ending.css', 'pwa.js', 'pwa.css', 'manifest.webmanifest', 'assets/icon-180.png', 'assets/icon-192.png', 'assets/icon-512.png']) {
     const response = await dispatch('fetch', {request: {url: base + asset, method: 'GET'}});
     assert((await response.arrayBuffer()).byteLength > 0);
   }
