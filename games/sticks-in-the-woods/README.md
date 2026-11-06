@@ -53,3 +53,50 @@ Touch layouts show a compact health bar, wave number and one-line weapon name at
 Cache advances from v3 to v4. Storage, save format, dependencies and consent behavior are unchanged. The mobile browser suite passed in Edge at 320×568, 390×844 and 844×390, covering HUD bounds, edge placement, pickup availability/collection/range, simultaneous sticks, retained aim, idle fade and cancellation without game JavaScript errors. Portrait layout was also inspected in a screenshot. The existing PWA suite and actual browser v3→v4 upgrade/offline-start suite passed. Physical-device checks remain unperformed.
 
 Run `node games/sticks-in-the-woods/tests/mobile.browser.cjs` with Playwright on NODE_PATH. Set PLAYWRIGHT_CHANNEL=msedge to use Edge; default is chrome. MOBILE_SCREENSHOT optionally saves the portrait check image.
+
+## HTML/SVG ending draft — November 6, 2026
+
+The user requested an ending built directly in HTML, without generated images, and a character who does not look sad. The scene is now an editable inline SVG built by ending-scene.js: layered burnt landscape, charred trees, ash, six fallen-creature designs and a segmented stump character. The character has level brows, a fixed neutral mouth and steady gaze. The camera continuously changes the same SVG viewBox from face close-up to wide reveal. His legs disappear before a quick fall to the ground; his face stays upright. All raster art and its generation notes are removed from runtime inputs. The standalone preview is self-contained HTML (about 19 KB).
+
+The draft remains silent. Wave-100 completion, final XP award, best-wave save, stats, Made by 2badIdeas credit, skip and return-to-title flow are unchanged. Black 0–4s; fade to close-up; pullback starts at 12s; legs disappear and the quick drop starts at 32s; cut to black at 37s; stats fade at 39s; Return to title at 44s. Hidden tabs pause the timeline. Reduced motion disables the camera zoom and ash drift. Phones retain the whole scene with letterboxing.
+
+| Review | Evidence | Result |
+| --- | --- | --- |
+| Code-built scene, local-only stats | ending-scene.js SVG paths/symbols/gradients; ending.js DOM | No raster images, media, network APIs, new storage or telemetry. |
+| Neutral expression and animation | Level brow paths; data-expression=steady; live viewBox/limb transforms | Browser checks verify the same vector scene pulls back and the legs disappear before a fast drop while expression stays steady. |
+| Completion and persistence | Ending browser suite wave 99/100 checks | Ending begins only after clearing 100; final XP awards once, best wave saves and a new run resets elapsed time. |
+| Offline delivery | sw.js v7; PWA/browser upgrade suites | Current main v4 upgrades to v7, includes ending-scene.js, removes prior image assets, isolates caches and preserves disposable storage. |
+
+No dependency, save format, analytics or privacy-policy changes. Existing scores/inputs/progress remain on-device and the current consent controller is retained. Runtime fonts/assets remain local except the separately consented tracker. Clearing site data removes cached scene code and local progression as documented in privacy.html.
+
+Validation: JavaScript syntax, PWA suite and ending browser suite passed in Edge for desktop, portrait phone, landscape phone and reduced-motion/no-audio cases. Tests cover the no-raster requirement, level brows, continuous camera, quick drop, wave-clear guard, idempotent reward, exact stats, background pause, skip and return/new run. Desktop close-up/wide/seated and mobile layouts were visually inspected. Actual browser v4→v7 upgrade/offline checks pass for all ending code/styles and preserved storage. Physical devices, Safari and production remain unverified.
+
+Run node games/sticks-in-the-woods/tests/ending.browser.cjs with Playwright on NODE_PATH and optional PLAYWRIGHT_CHANNEL=msedge. ENDING_SCREENSHOTS saves synthetic check frames. Previous main: 3a58c73. Roll back through a PR restoring the prior wave-clear flow and advancing the worker version; preserve saves. Jacob reviews and merges draft PR #11.
+
+### Sitting and background refinement — November 6, 2026
+
+Removed torso/mouth breathing motion. Added 250 small background creatures and 90 midfield placements to the original tableau, with a clear space around the character; after culling, more than 350 figures remain. The sit now has a short balance preparation, articulated knee/hip descent, hands braced against the ground before contact, a small single settling motion, then forearms moving onto the knees. Feet remain on the same ground plane. The steady expression, silent soundtrack, stats and credit are unchanged.
+
+Cache v8 replaces v7 for the changed scene. Browser checks additionally verify that torso/mouth are stationary before the sit, the denser background, grounded hands during descent and hands resting at the knees afterward. Staged screenshots were inspected. No new storage, media, dependencies, requests or analytics behavior.
+
+### Quick-drop revision — November 6, 2026
+
+Replaces the sitting sequence: both legs and their outlines disappear at 32s; the stump accelerates downward over 0.32 seconds. Arms lag slightly, followed by a small impact compression/rebound and brief ash puff, then settle at his sides. The body stays grounded and the legs remain hidden. The face remains steady and there is no breathing loop or sound. The existing dense background, black cut, stats and credit stay the same. Reduced-motion mode suppresses impact dust and squash/rebound.
+
+Cache v9 ships this revision. Browser checks cover leg/outline disappearance, fast landing, impact dust and grounded pose alongside the existing desktop/mobile, completion, stats and return checks. The local standalone preview has a Preview drop shortcut. No data-handling or save changes.
+
+### Foreground overlap fix — November 6, 2026
+
+Trees, fallen creatures and the stump now share one SVG drawing order based on their ground contact positions. Foreground trunks correctly cover more distant creatures, while closer creatures can still cover trees behind them. Scene layout, animation and stats are unchanged. Cache v10 delivers the updated scene. The wide frame was visually inspected; the ending browser suite, PWA suite and actual v4→v10 offline/upgrade browser checks pass.
+
+### Distant creature grounding — November 6, 2026
+
+Creature placement now follows the ground's curved horizon at each horizontal position, with perspective scale based on distance into the ground plane. This removes distant figures placed above the visible terrain. Existing depth ordering is retained. Cache v11 delivers the fix. Desktop wide frame visually inspected; desktop/mobile/reduced-motion ending checks, PWA suite and actual v4→v11 offline upgrade checks pass. No data-handling changes.
+
+### Final smile — November 6, 2026
+
+After landing, the neutral mouth eases into a small smile from 33.8s to 35s and holds until the cut to black. There is no breathing loop. The existing face stays steady during the earlier shots. Stats and timing remain unchanged. Cache v12 includes the revised scene. Final expression browser assertion, desktop/mobile/reduced-motion ending checks, PWA suite and actual v4→v12 offline upgrade checks pass; the final wide frame was inspected visually.
+
+### Final silent version — November 6, 2026
+
+Removed the music module, controls and audio integration at the owner's request. The ending is silent, retaining grounded creatures, correct tree layering, quick leg-disappearance/drop, final smile, stats and Made by 2badIdeas credit. Cache v14 removes music from the cache inputs. JavaScript syntax, desktop/portrait/landscape/reduced-motion ending tests, PWA suite and actual v4-to-v14 offline upgrade checks pass. Physical devices and production remain unverified.
