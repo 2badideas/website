@@ -7,7 +7,7 @@
   function create(){
     const stage=document.createElement('div');stage.className='woods-ending-stage';
     stage.setAttribute('role','img');
-    stage.setAttribute('aria-label','A winded, steady-eyed stump in a burnt forest. The view pulls back across fallen creatures and he sits down.');
+    stage.setAttribute('aria-label','A steady-eyed stump in a burnt forest. The view pulls back across fallen creatures and he sits down.');
     let seed=107;const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)|0;return(seed>>>0)/4294967296;};
     const branches=(x,y,s)=>`<path d="M${x} ${y}l${-4*s} ${-64*s} ${8*s} ${-61*s} ${-5*s} ${-51*s}m${2*s} ${81*s}l${-27*s} ${-27*s} ${-15*s} ${-36*s}m${42*s} ${27*s}l${24*s} ${-25*s} ${8*s} ${-26*s}" fill="none" stroke="#252326" stroke-width="${9*s}" stroke-linecap="square"/>`;
     let farTrees='',trees='',ash='',cracks='',bodies='',bark='',flecks='';
@@ -30,13 +30,19 @@
     }
     // A fixed, depth-sorted tableau suggests the defeated forest without storing kills.
     const fallen=[];
-    for(let i=0;i<86;i++){
-      const y=430+Math.pow(random(),.7)*450,x=random()*1800-100;
-      if(Math.abs(x-800)<85&&Math.abs(y-565)<90)continue;
-      fallen.push({x,y,s:.15+(y-420)/210,type:i%6,flip:i%2?-1:1});
+    function addFallen(count,minY,range,zone){
+      for(let i=0;i<count;i++){
+        const y=minY+random()*range,x=random()*1800-100;
+        if(Math.abs(x-800)<85&&Math.abs(y-565)<90)continue;
+        const size=zone==='background'?.075+(y-420)/440:.15+(y-420)/210;
+        fallen.push({x,y,s:size,type:i%6,flip:i%2?-1:1,zone});
+      }
     }
+    addFallen(86,430,450,'foreground');
+    addFallen(250,424,108,'background');
+    addFallen(90,495,135,'midground');
     fallen.sort((a,b)=>a.y-b.y);
-    for(const b of fallen)bodies+=`<g transform="translate(${b.x} ${b.y}) scale(${b.s*b.flip} ${b.s})"><use x="-70" y="-40" width="140" height="80" href="#we-${['wolf','rabbit','deer','beaver','beetle','mushroom'][b.type]}"/></g>`;
+    for(const b of fallen)bodies+=`<g data-fallen="${b.zone}" transform="translate(${b.x} ${b.y}) scale(${b.s*b.flip} ${b.s})"><use x="-70" y="-40" width="140" height="80" href="#we-${['wolf','rabbit','deer','beaver','beetle','mushroom'][b.type]}"/></g>`;
     for(let i=0;i<24;i++){
       const x=-40+i*3.5,top=-110+random()*10,bottom=-29+random()*12;
       bark+=`<path d="M${x} ${top}q${random()*7-3} 17 ${random()*5-2} 34t${random()*5-2} ${bottom-top-34}" fill="none" stroke="${i%3?'#51382b':'#d1a56d'}" stroke-width="${i%4?.55:1.4}" opacity=".6"/>`;
@@ -95,9 +101,9 @@
     <g>${ash}${cracks}</g><g>${trees}</g><g>${bodies}</g>
     <g data-hero="true" transform="translate(800 560)">
       <ellipse cx="1" cy="28" rx="63" ry="13" fill="#11171b" opacity=".7"/>
-      <path data-leg="left" fill="none" stroke="url(#we-leg)" stroke-width="13" stroke-linecap="round"/>
-      <path data-leg="right" fill="none" stroke="url(#we-leg)" stroke-width="13" stroke-linecap="round"/>
-      <path data-arm="left" fill="none" stroke="url(#we-leg)" stroke-width="10" stroke-linejoin="round" stroke-linecap="round"/>
+      <path data-leg-shadow="left" fill="none" stroke="#47372d" stroke-width="17" stroke-linejoin="round" stroke-linecap="round"/><path data-leg="left" stroke-linejoin="round" fill="none" stroke="url(#we-leg)" stroke-width="13" stroke-linecap="round"/>
+      <path data-leg-shadow="right" fill="none" stroke="#47372d" stroke-width="17" stroke-linejoin="round" stroke-linecap="round"/><path data-leg="right" stroke-linejoin="round" fill="none" stroke="url(#we-leg)" stroke-width="13" stroke-linecap="round"/>
+      <path data-arm-shadow="left" fill="none" stroke="#47372d" stroke-width="13" stroke-linejoin="round" stroke-linecap="round"/><path data-arm="left" fill="none" stroke="url(#we-leg)" stroke-width="10" stroke-linejoin="round" stroke-linecap="round"/>
       <g data-torso="true">
         <path d="M-43-113Q-51-72-42-25Q0-8 41-25Q51-65 43-113Z" fill="url(#we-bark)" stroke="#47372d" stroke-width="1.5"/>
         <g clip-path="url(#we-body-clip)">${bark}<path d="M-39-76l12-6 7 13-3 19-15 8Z" fill="#262d31" opacity=".6"/><path d="M27-45l9-4 7 18-17 3Z" fill="#333133" opacity=".5"/></g>
@@ -118,7 +124,8 @@
           <path d="M15-49l11-6M15-47l12-6" stroke="#4c3d30" stroke-width=".8"/><path d="M-7-40l13 0" stroke="#c29b67" opacity=".6"/>
         </g>
       </g>
-      <path data-arm="right" fill="none" stroke="url(#we-leg)" stroke-width="10" stroke-linejoin="round" stroke-linecap="round"/>
+      <path data-arm-shadow="right" fill="none" stroke="#47372d" stroke-width="13" stroke-linejoin="round" stroke-linecap="round"/><path data-arm="right" fill="none" stroke="url(#we-leg)" stroke-width="10" stroke-linejoin="round" stroke-linecap="round"/>
+      <path data-hand="left" fill="none" stroke="#c49a69" stroke-width="2" stroke-linecap="round"/><path data-hand="right" fill="none" stroke="#c49a69" stroke-width="2" stroke-linecap="round"/>
     </g>
     <rect x="-300" y="280" width="2200" height="190" fill="url(#we-fog)" pointer-events="none"/>
     <g data-drifting-ash="true">${flecks}</g>
@@ -129,17 +136,30 @@
     const leftArm=stage.querySelector('[data-arm="left"]'),rightArm=stage.querySelector('[data-arm="right"]'),drift=stage.querySelector('[data-drifting-ash]');
     function setTime(t,reduced){
       stage.style.opacity=t<4||t>=37?'0':String(ease((t-4)/3));
-      const pull=ease((t-12)/20),sit=ease((t-32)/4.5);
+      const pull=ease((t-12)/20);
+      const prepare=ease((t-32)/.65),lower=ease((t-32.55)/2.1),plant=ease((t-33.1)/1.1),rest=ease((t-35)/.9),settle=ease((t-35.1)/1);
       const width=reduced?1600:140*Math.pow(1600/140,pull),height=width*9/16,cy=reduced?450:mix(493,450,pull);
       svg.setAttribute('viewBox',`${800-width/2} ${cy-height/2} ${width} ${height}`);
-      const breath=reduced?0:Math.sin((t-4)*(3.2-sit*.8)),drop=sit*36;
-      torso.setAttribute('transform',`translate(0 ${drop+breath*.7}) scale(1 ${1+breath*.009})`);
-      mouth.setAttribute('ry',String(2+Math.max(0,breath)*(3.2-sit)));
+      // A controlled crouch, hand support, ground contact, then hands to knees.
+      // The torso and mouth stay still before the sit: there is no breathing loop.
+      const contact=t>34.65&&t<35.4?Math.sin((t-34.65)*Math.PI/.75)*1.3:0;
+      const drop=lower*39+contact,lean=prepare*(1-settle)*.025,shift=-Math.sin(lower*Math.PI)*2;
+      torso.setAttribute('transform',`translate(${shift} ${drop}) translate(0 -20) scale(${1+lean*.5} ${1-lean}) translate(0 20)`);
+      mouth.setAttribute('ry','1.3');
       const blink=!reduced&&((t>9.1&&t<9.3)||(t>23.1&&t<23.3));
       eyes.setAttribute('transform',blink?'translate(0 -65) scale(1 .15) translate(0 65)':'');
       for(const [side,leg,arm] of [[-1,leftLeg,leftArm],[1,rightLeg,rightArm]]){
-        leg.setAttribute('d',`M${side*23} ${-22+drop}Q${side*mix(24,51,sit)} ${mix(4,12,sit)} ${side*mix(31,49,sit)} 26l${side*10} 1`);
-        arm.setAttribute('d',`M${side*42} ${-85+drop+breath*.7}Q${side*mix(58,60,sit)} ${-48+drop} ${side*mix(58,43,sit)} ${-20+drop-sit*11}`);
+        const kneeX=side*mix(26,57,lower),kneeY=mix(4,-3,lower),footX=side*(35+prepare*5+lower*14);
+        const legPath=`M${side*23+shift} ${-22+drop}L${kneeX} ${kneeY}L${footX} 26l${side*10} 1`;
+        leg.setAttribute('d',legPath);
+        stage.querySelector(`[data-leg-shadow="${side<0?'left':'right'}"]`).setAttribute('d',legPath);
+        const handX=side*mix(mix(58,68,prepare),76,plant),handY=mix(mix(-20,-37,prepare),25,plant);
+        const restingX=mix(handX,side*57,rest),restingY=mix(handY,-3,rest);
+        const elbowX=side*mix(mix(58,69,prepare),75,plant),elbowY=mix(mix(-48,-63,prepare),-6,plant);
+        const armPath=`M${side*42+shift} ${-85+drop}L${mix(elbowX,side*64,rest)} ${mix(elbowY,-18,rest)}L${restingX} ${restingY}`;
+        arm.setAttribute('d',armPath);
+        stage.querySelector(`[data-arm-shadow="${side<0?'left':'right'}"]`).setAttribute('d',armPath);
+        stage.querySelector(`[data-hand="${side<0?'left':'right'}"]`).setAttribute('d',`M${restingX} ${restingY}l${side*7} 1m${-side*7} -1l${side*5} 4m${-side*5} -4l${side*1} 5`);
       }
       drift.setAttribute('transform',reduced?'':`translate(${Math.sin(t*.15)*8} ${-t*.45})`);
     }

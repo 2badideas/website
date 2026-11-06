@@ -56,9 +56,9 @@ Run `node games/sticks-in-the-woods/tests/mobile.browser.cjs` with Playwright on
 
 ## HTML/SVG ending draft — November 6, 2026
 
-The user requested an ending built directly in HTML, without generated images, and a character who does not look sad. The scene is now an editable inline SVG built by ending-scene.js: layered burnt landscape, charred trees, ash, six fallen-creature designs and a segmented stump character. The character has level brows, a neutral breathing mouth and steady gaze. The camera continuously changes the same SVG viewBox from face close-up to wide reveal. Body/arms/legs animate into a seated pose; the pose keeps his face upright. All raster art and its generation notes are removed from runtime inputs. The standalone preview is self-contained HTML (about 19 KB).
+The user requested an ending built directly in HTML, without generated images, and a character who does not look sad. The scene is now an editable inline SVG built by ending-scene.js: layered burnt landscape, charred trees, ash, six fallen-creature designs and a segmented stump character. The character has level brows, a fixed neutral mouth and steady gaze. The camera continuously changes the same SVG viewBox from face close-up to wide reveal. Body/arms/legs animate into a seated pose; the pose keeps his face upright. All raster art and its generation notes are removed from runtime inputs. The standalone preview is self-contained HTML (about 19 KB).
 
-The draft remains silent. Wave-100 completion, final XP award, best-wave save, stats, Made by 2badIdeas credit, skip and return-to-title flow are unchanged. Black 0–4s; fade to close-up; pullback starts at 12s; sitting starts at 32s; cut to black at 37s; stats fade at 39s; Return to title at 44s. Hidden tabs pause the timeline. Reduced motion disables the camera zoom, breathing and ash drift. Phones retain the whole scene with letterboxing.
+The draft remains silent. Wave-100 completion, final XP award, best-wave save, stats, Made by 2badIdeas credit, skip and return-to-title flow are unchanged. Black 0–4s; fade to close-up; pullback starts at 12s; sitting starts at 32s; cut to black at 37s; stats fade at 39s; Return to title at 44s. Hidden tabs pause the timeline. Reduced motion disables the camera zoom and ash drift. Phones retain the whole scene with letterboxing.
 
 | Review | Evidence | Result |
 | --- | --- | --- |
@@ -72,3 +72,9 @@ No dependency, save format, analytics or privacy-policy changes. Existing scores
 Validation: JavaScript syntax, PWA suite and ending browser suite passed in Edge for desktop, portrait phone, landscape phone and reduced-motion/no-audio cases. Tests cover the no-raster requirement, level brows, continuous camera, seated pose, wave-clear guard, idempotent reward, exact stats, background pause, skip and return/new run. Desktop close-up/wide/seated and mobile layouts were visually inspected. Actual browser v4→v7 upgrade/offline checks pass for all ending code/styles and preserved storage. Physical devices, Safari and production remain unverified.
 
 Run node games/sticks-in-the-woods/tests/ending.browser.cjs with Playwright on NODE_PATH and optional PLAYWRIGHT_CHANNEL=msedge. ENDING_SCREENSHOTS saves synthetic check frames. Previous main: 3a58c73. Roll back through a PR restoring the prior wave-clear flow and advancing the worker version; preserve saves. Jacob reviews and merges draft PR #11.
+
+### Sitting and background refinement — November 6, 2026
+
+Removed torso/mouth breathing motion. Added 250 small background creatures and 90 midfield placements to the original tableau, with a clear space around the character; after culling, more than 350 figures remain. The sit now has a short balance preparation, articulated knee/hip descent, hands braced against the ground before contact, a small single settling motion, then forearms moving onto the knees. Feet remain on the same ground plane. The steady expression, silent soundtrack, stats and credit are unchanged.
+
+Cache v8 replaces v7 for the changed scene. Browser checks additionally verify that torso/mouth are stationary before the sit, the denser background, grounded hands during descent and hands resting at the knees afterward. Staged screenshots were inspected. No new storage, media, dependencies, requests or analytics behavior.
